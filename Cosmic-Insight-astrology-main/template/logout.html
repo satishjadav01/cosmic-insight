@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - Cosmic Numerology</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root {
+      --bg-void:    #04020b;
+      --bg-card:    rgba(12,6,28,0.85);
+      --gold-hot:   #f0c060;
+      --gold-warm:  #c9984a;
+      --gold-dim:   #7a5c28;
+      --rose:       #d4547a;
+      --rose-glow:  #ff7ba0;
+      --teal:       #2dd4bf;
+      --cream:      #f0e6d3;
+      --muted:      #7a6d8a;
+      --border:     rgba(200,152,74,0.22);
+      --border-hot: rgba(240,192,96,0.50);
+      --font-head:  'Cormorant Garamond', Georgia, serif;
+      --font-num:   'DM Mono', monospace;
+      --font-body:  'Outfit', sans-serif;
+    }
+
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+
+    body {
+      background: var(--bg-void);
+      font-family: var(--font-body);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CURSOR */
+    .cursor { position:fixed; z-index:9999; width:10px; height:10px; background:var(--gold-hot); border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); box-shadow:0 0 20px var(--gold-hot),0 0 40px rgba(240,192,96,0.4); mix-blend-mode:screen; }
+    .cursor-ring { position:fixed; z-index:9998; width:36px; height:36px; border:1px solid rgba(240,192,96,0.5); border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); transition:transform .12s ease-out; }
+
+    /* CANVAS */
+    #cosmos { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    body::after { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:2; opacity:0.35; }
+
+    /* WRAPPER */
+    .auth-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      opacity: 0;
+      animation: fadeUp 1s 0.2s forwards;
+    }
+
+    /* LOGO */
+    .logo {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+    .logo-icon {
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(240,192,96,0.15), rgba(201,152,74,0.08));
+      border: 1px solid var(--border-hot);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+      font-size: 1.8rem;
+      color: var(--gold-hot);
+      box-shadow: 0 0 40px rgba(240,192,96,0.15);
+      animation: floatIcon 4s ease-in-out infinite;
+    }
+    @keyframes floatIcon { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+    .logo h1 {
+      font-family: var(--font-head);
+      font-size: 2.6rem;
+      font-weight: 300;
+      color: var(--cream);
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+    .logo h1 em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold-hot), var(--rose-glow), var(--gold-warm));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .logo-eyebrow {
+      font-family: var(--font-num);
+      font-size: 0.62rem;
+      letter-spacing: 5px;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-top: 0.6rem;
+      display: block;
+    }
+
+    /* MANDALA BG for card */
+    .card-mandala {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 420px; height: 420px;
+      opacity: 0.04;
+      animation: mandala-spin 80s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes mandala-spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    /* CARD */
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 2.8rem 2.4rem;
+      backdrop-filter: blur(28px);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(240,192,96,0.04);
+      transition: border-color .3s;
+    }
+    .auth-card:hover { border-color: rgba(240,192,96,0.35); }
+    .auth-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold-warm), var(--gold-hot), var(--gold-warm), transparent);
+    }
+    .auth-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(240,192,96,0.05), transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    .auth-card > * { position: relative; z-index: 1; }
+
+    /* MESSAGES */
+    .message {
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 1.2rem;
+      text-align: center;
+      font-family: var(--font-num);
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .message.error { background: rgba(212,84,122,0.1); border: 1px solid rgba(212,84,122,0.35); color: var(--rose-glow); }
+    .message.success { background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.3); color: var(--teal); }
+
+    /* USER INFO BLOCK */
+    .user-info-block {
+      text-align: center;
+      padding: 1.8rem 1.4rem;
+      background: rgba(4,2,10,0.55);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 1.8rem;
+      transition: border-color .3s;
+    }
+    .user-info-block:hover { border-color: rgba(240,192,96,0.3); }
+    .user-avatar-lg {
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(240,192,96,0.15), rgba(201,152,74,0.08));
+      border: 1px solid var(--border-hot);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.5rem; color: var(--gold-hot);
+      box-shadow: 0 0 25px rgba(240,192,96,0.1);
+    }
+    .user-mobile {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--gold-hot);
+      text-shadow: 0 0 20px rgba(240,192,96,0.35);
+      letter-spacing: 1px;
+      margin-bottom: 0.4rem;
+    }
+    .user-status {
+      font-family: var(--font-num);
+      font-size: 0.6rem;
+      letter-spacing: 4px;
+      color: var(--teal);
+      text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 8px var(--teal);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    /* WELCOME MSG */
+    .welcome-message {
+      text-align: center;
+      margin-bottom: 1.8rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* DIVIDER */
+    .section-divider {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 1.6rem;
+    }
+    .section-divider::before,.section-divider::after { content:''; flex:1; height:1px; }
+    .section-divider::before { background: linear-gradient(90deg,transparent,var(--gold-dim)); }
+    .section-divider::after  { background: linear-gradient(90deg,var(--gold-dim),transparent); }
+    .section-divider span {
+      font-family: var(--font-num);
+      font-size: 0.58rem;
+      letter-spacing: 4px;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* FORM */
+    .form-group { margin-bottom: 1.6rem; }
+    .form-label {
+      font-family: var(--font-num);
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .form-label i { color: var(--gold-warm); }
+    .input-wrap { position: relative; }
+    .country-flag {
+      position: absolute;
+      left: 16px; top: 50%; transform: translateY(-50%);
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-num);
+      font-size: 0.8rem;
+      color: var(--gold-warm);
+      pointer-events: none;
+    }
+    .form-input {
+      width: 100%;
+      padding: 13px 16px 13px 72px;
+      background: rgba(4,2,10,0.72);
+      border: 1px solid rgba(240,192,96,0.2);
+      border-radius: 14px;
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 1px;
+      transition: all .25s;
+      text-align: left;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(240,192,96,0.55);
+      box-shadow: 0 0 0 3px rgba(240,192,96,0.07);
+    }
+    .form-input::placeholder { color: rgba(122,109,138,0.5); font-size:0.9rem; letter-spacing:0; }
+
+    /* BUTTONS */
+    .logout-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(212,84,122,0.22), rgba(212,84,122,0.14));
+      border: 1px solid rgba(212,84,122,0.5);
+      border-radius: 14px;
+      color: var(--rose-glow);
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .3s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 1rem;
+    }
+    .logout-btn:hover {
+      border-color: var(--rose-glow);
+      box-shadow: 0 0 40px rgba(212,84,122,0.18);
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(212,84,122,0.3), rgba(212,84,122,0.2));
+    }
+
+    .action-buttons { display: flex; gap: 0.8rem; }
+    .btn {
+      flex: 1; padding: 12px;
+      border: none; border-radius: 14px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+    .btn-cancel {
+      background: rgba(240,192,96,0.07);
+      color: var(--gold-warm);
+      border: 1px solid var(--border);
+    }
+    .btn-cancel:hover {
+      border-color: var(--border-hot);
+      background: rgba(240,192,96,0.12);
+      color: var(--gold-hot);
+      transform: translateY(-1px);
+    }
+
+    /* FOOTER */
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.8rem;
+      font-family: var(--font-num);
+      font-size: 0.58rem;
+      letter-spacing: 3px;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
+
+    /* RESPONSIVE */
+    @media(max-width:520px){
+      .auth-card { padding: 2rem 1.4rem; }
+      .logo h1 { font-size: 2rem; }
+      .action-buttons { flex-direction: column; }
+    }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+<canvas id="cosmos"></canvas>
+
+<div class="auth-wrapper">
+
+    <!-- LOGO -->
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-star-and-crescent"></i></div>
+        <h1>Cosmic <em>Numerology</em></h1>
+        <span class="logo-eyebrow">✦ Ancient Vedic Wisdom ✦</span>
+    </div>
+
+    <!-- CARD -->
+    <div class="auth-card">
+
+        <!-- Mandala background -->
+        <svg class="card-mandala" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="250" cy="250" r="240" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="180" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="120" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="70"  stroke="#c9984a" stroke-width="0.5"/>
+            <line x1="250" y1="10"  x2="250" y2="490" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="10"  y1="250" x2="490" y2="250" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="80"  y1="80"  x2="420" y2="420" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="420" y1="80"  x2="80"  y2="420" stroke="#c9984a" stroke-width="0.4"/>
+            <polygon points="250,50 450,350 50,350"  stroke="#c9984a" stroke-width="0.4" fill="none"/>
+            <polygon points="250,450 450,150 50,150" stroke="#c9984a" stroke-width="0.4" fill="none"/>
+            <circle cx="250" cy="250" r="8" fill="#c9984a" opacity="0.5"/>
+        </svg>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if error %}
+            <div class="message error"><i class="fas fa-exclamation-circle"></i> &nbsp;{{ error }}</div>
+        {% endif %}
+
+        <!-- USER INFO -->
+        <div class="user-info-block">
+            <div class="user-avatar-lg"><i class="fas fa-user"></i></div>
+            <div class="user-mobile">+91 {{ user.mobile }}</div>
+            <div class="user-status">
+                <span class="status-dot"></span>
+                Currently Logged In
+            </div>
+        </div>
+
+        <p class="welcome-message">
+            Enter your mobile number below to confirm and securely log out of your cosmic session.
+        </p>
+
+        <div class="section-divider"><span>☽ Confirm Identity ☾</span></div>
+
+        <!-- FORM -->
+        <form method="POST" action="{% url 'logout_view' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="mobileNumber" class="form-label">
+                    <i class="fas fa-mobile-alt"></i> Confirm Mobile Number
+                </label>
+                <div class="input-wrap">
+                    <div class="country-flag">
+                        <i class="fas fa-flag" style="font-size:0.7rem;"></i> +91
+                    </div>
+                    <input
+                        type="tel"
+                        id="mobileNumber"
+                        name="mobile"
+                        class="form-input"
+                        placeholder="Enter your 10-digit number"
+                        maxlength="10"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Confirm Logout
+            </button>
+
+            <div class="action-buttons">
+                <a href="{% url 'home' %}" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            <p>© {% now "Y" %} Cosmic Numerology · All rights reserved</p>
+        </div>
+    </div>
+
+</div><!-- /auth-wrapper -->
+
+<script>
+(function(){
+"use strict";
+
+/* CURSOR */
+const cur=document.getElementById('cur');
+const curRing=document.getElementById('curRing');
+let rx=window.innerWidth/2,ry=window.innerHeight/2,mx=rx,my=ry;
+window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animC(){rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(animC);})();
+
+/* COSMOS */
+const cosC=document.getElementById('cosmos');
+const cosX=cosC.getContext('2d');
+let stars=[],nebulas=[],gRot=0,pt=0;
+function resizeCos(){
+  cosC.width=window.innerWidth;cosC.height=window.innerHeight;
+  stars=[];nebulas=[];
+  for(let i=0;i<280;i++)stars.push({x:Math.random()*cosC.width,y:Math.random()*cosC.height,r:Math.random()*1.8+0.3,b:Math.random()*0.6+0.2,px:0.05+Math.random()*0.4,tw:Math.random()*Math.PI*2,sp:0.005+Math.random()*0.015});
+  for(let i=0;i<40;i++)nebulas.push({x:Math.random()*cosC.width,y:Math.random()*cosC.height,r:40+Math.random()*110,h:30+Math.random()*40});
+}
+function drawCos(){
+  pt+=0.006;
+  const ox=(mx-cosC.width/2)*0.008,oy=(my-cosC.height/2)*0.008;
+  const grd=cosX.createRadialGradient(cosC.width/2,cosC.height/2,0,cosC.width/2,cosC.height/2,cosC.width*0.8);
+  grd.addColorStop(0,'#0c0620');grd.addColorStop(0.5,'#07031a');grd.addColorStop(1,'#04020b');
+  cosX.fillStyle=grd;cosX.fillRect(0,0,cosC.width,cosC.height);
+  nebulas.forEach(n=>{
+    const nx=(n.x+ox*n.r*0.3+cosC.width)%cosC.width,ny=(n.y+oy*n.r*0.2+cosC.height)%cosC.height;
+    const g=cosX.createRadialGradient(nx,ny,0,nx,ny,n.r);
+    g.addColorStop(0,`hsla(${n.h},60%,30%,0.055)`);g.addColorStop(1,'transparent');
+    cosX.fillStyle=g;cosX.beginPath();cosX.arc(nx,ny,n.r,0,Math.PI*2);cosX.fill();
+  });
+  stars.forEach(s=>{
+    const pulse=Math.sin(pt*s.sp*60+s.tw);
+    const b=Math.max(0.05,s.b+pulse*0.12);
+    const sx=(s.x+ox*s.px*3+cosC.width)%cosC.width,sy=(s.y+oy*s.px*3+cosC.height)%cosC.height;
+    cosX.shadowColor='rgba(240,200,120,0.4)';cosX.shadowBlur=6*b;
+    cosX.fillStyle=`rgba(255,245,220,${b})`;
+    cosX.beginPath();cosX.arc(sx,sy,s.r*(1+pulse*0.15),0,Math.PI*2);cosX.fill();
+  });
+  cosX.shadowBlur=0;
+  cosX.save();cosX.translate(cosC.width*0.85,cosC.height*0.15);cosX.rotate(gRot);
+  for(let i=0;i<3;i++){cosX.beginPath();cosX.ellipse(0,0,70+i*28,26+i*9,0,0,Math.PI*2);cosX.strokeStyle=`rgba(201,152,74,${0.04+i*0.02})`;cosX.lineWidth=1;cosX.stroke();}
+  cosX.restore();gRot+=0.0005;
+  requestAnimationFrame(drawCos);
+}
+window.addEventListener('resize',resizeCos);
+resizeCos();
+drawCos();
+
+})();
+</script>
+</body>
+</html>

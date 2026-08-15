@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In · Cosmic Insights</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+    :root {
+        --bg-void:   #04020b;
+        --bg-deep:   #090516;
+        --bg-card:   rgba(12, 6, 28, 0.80);
+        --gold-hot:  #f0c060;
+        --gold-warm: #c9984a;
+        --gold-dim:  #7a5c28;
+        --rose:      #d4547a;
+        --rose-glow: #ff7ba0;
+        --teal:      #2dd4bf;
+        --cream:     #f0e6d3;
+        --muted:     #7a6d8a;
+        --border:    rgba(200, 152, 74, 0.22);
+        --border-hot:rgba(240, 192, 96, 0.50);
+        --font-head: 'Cormorant Garamond', Georgia, serif;
+        --font-num:  'DM Mono', monospace;
+        --font-body: 'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+        background: var(--bg-void);
+        font-family: var(--font-body);
+        color: var(--cream);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: none;
+        padding: 2rem;
+    }
+
+    /* grain */
+    body::after {
+        content:'';
+        position:fixed; inset:0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events:none; z-index:2; opacity:0.35;
+    }
+
+    /* ── Cursors ── */
+    .cursor {
+        position:fixed; z-index:9999;
+        width:10px; height:10px;
+        background: var(--gold-hot);
+        border-radius:50%; pointer-events:none;
+        transform:translate(-50%,-50%);
+        box-shadow: 0 0 20px var(--gold-hot), 0 0 40px rgba(240,192,96,0.4);
+        mix-blend-mode: screen;
+    }
+    .cursor-ring {
+        position:fixed; z-index:9998;
+        width:36px; height:36px;
+        border:1px solid rgba(240,192,96,0.45);
+        border-radius:50%; pointer-events:none;
+        transform:translate(-50%,-50%);
+        transition: transform .12s ease-out, width .3s, height .3s;
+    }
+
+    /* ── Canvas ── */
+    #cosmos   { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    #particles{ position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+    /* ── Mandala bg ── */
+    .mandala-bg {
+        position: fixed;
+        top:50%; left:50%;
+        transform: translate(-50%,-50%);
+        width: min(700px, 100vw);
+        height: min(700px, 100vw);
+        opacity: 0.045;
+        animation: spin 100s linear infinite;
+        pointer-events: none;
+        z-index: 3;
+    }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    /* ── Login wrapper ── */
+    .login-wrap {
+        position: relative; z-index: 10;
+        width: 100%; max-width: 460px;
+        display: flex; flex-direction: column;
+        align-items: center;
+        gap: 0;
+        animation: fadeUp .9s ease both;
+    }
+    @keyframes fadeUp {
+        from { opacity:0; transform: translateY(28px); }
+        to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* ── Brand header ── */
+    .brand {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .brand-icon {
+        width: 64px; height: 64px;
+        border: 1px solid var(--border-hot);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.2rem;
+        background: radial-gradient(circle, rgba(240,192,96,0.1), transparent);
+        box-shadow: 0 0 40px rgba(240,192,96,0.15), inset 0 0 20px rgba(240,192,96,0.05);
+        animation: pulse-ring 3s ease-in-out infinite;
+        font-size: 1.6rem;
+        color: var(--gold-hot);
+    }
+    @keyframes pulse-ring {
+        0%,100% { box-shadow: 0 0 30px rgba(240,192,96,0.1), inset 0 0 20px rgba(240,192,96,0.04); }
+        50%      { box-shadow: 0 0 60px rgba(240,192,96,0.25), inset 0 0 30px rgba(240,192,96,0.08); }
+    }
+
+    .brand-name {
+        font-family: var(--font-head);
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: var(--cream);
+        letter-spacing: 1px;
+        line-height: 1;
+        margin-bottom: 0.4rem;
+    }
+
+    .brand-name em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--gold-hot), var(--rose-glow), var(--gold-warm));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .brand-sub {
+        font-family: var(--font-num);
+        font-size: 0.62rem;
+        letter-spacing: 5px;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+
+    /* divider */
+    .divider {
+        display: flex; align-items: center; gap: 14px;
+        margin: 1.4rem 0;
+        width: 100%;
+    }
+    .divider::before, .divider::after {
+        content:''; flex:1; height:1px;
+        background: linear-gradient(90deg, transparent, var(--border));
+    }
+    .divider::after { background: linear-gradient(90deg, var(--border), transparent); }
+    .divider span {
+        font-family: var(--font-num);
+        font-size: 0.58rem; letter-spacing: 4px;
+        color: var(--gold-dim);
+    }
+
+    /* ── Card ── */
+    .card {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 2.6rem 2.4rem;
+        backdrop-filter: blur(28px);
+        position: relative;
+        overflow: hidden;
+        transition: border-color .3s;
+    }
+    .card::before {
+        content:'';
+        position:absolute; inset:0;
+        background: radial-gradient(ellipse at top left, rgba(240,192,96,0.05), transparent 60%),
+                    radial-gradient(ellipse at bottom right, rgba(212,84,122,0.04), transparent 60%);
+        pointer-events:none;
+    }
+    .card:hover { border-color: var(--border-hot); }
+
+    /* top accent line */
+    .card-accent {
+        position: absolute; top:0; left: 10%; right:10%; height:1px;
+        background: linear-gradient(90deg, transparent, var(--gold-warm), var(--rose), var(--gold-warm), transparent);
+        border-radius: 1px;
+    }
+
+    /* ── Welcome text ── */
+    .welcome-text {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .welcome-text h2 {
+        font-family: var(--font-head);
+        font-size: 1.55rem;
+        font-weight: 400;
+        color: var(--cream);
+        margin-bottom: 0.3rem;
+        font-style: italic;
+    }
+    .welcome-text p {
+        font-size: 0.82rem;
+        color: var(--muted);
+        letter-spacing: 0.5px;
+        font-weight: 300;
+    }
+
+    /* ── Error message ── */
+    .error-msg {
+        background: rgba(212,84,122,0.1);
+        border: 1px solid rgba(212,84,122,0.3);
+        border-radius: 12px;
+        padding: 0.9rem 1.2rem;
+        margin-bottom: 1.6rem;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 0.85rem;
+        color: var(--rose-glow);
+    }
+    .error-msg i { font-size: 0.9rem; color: var(--rose); flex-shrink:0; }
+
+    /* ── Field ── */
+    .field { margin-bottom: 1.6rem; }
+
+    .field-label {
+        display: flex; align-items: center; gap: 8px;
+        font-family: var(--font-num);
+        font-size: 0.6rem;
+        letter-spacing: 3.5px;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 0.6rem;
+    }
+    .field-label i { color: var(--gold-dim); font-size: 0.65rem; }
+
+    .input-wrap {
+        position: relative;
+        display: flex; align-items: center;
+    }
+
+    .country-tag {
+        position: absolute; left: 16px;
+        display: flex; align-items: center; gap: 6px;
+        font-family: var(--font-num);
+        font-size: 0.85rem;
+        color: var(--gold-warm);
+        pointer-events: none;
+        z-index: 1;
+        border-right: 1px solid var(--border);
+        padding-right: 12px;
+    }
+    .country-tag i { font-size: 0.7rem; }
+
+    .field input {
+        width: 100%;
+        background: rgba(4, 2, 10, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px 18px 14px 80px;
+        color: var(--cream);
+        font-family: var(--font-num);
+        font-size: 1.05rem;
+        font-weight: 400;
+        letter-spacing: 2px;
+        transition: all .25s;
+    }
+    .field input:focus {
+        outline: none;
+        border-color: var(--border-hot);
+        background: rgba(10, 6, 22, 0.9);
+        box-shadow: 0 0 0 3px rgba(240,192,96,0.07), 0 0 24px rgba(240,192,96,0.1);
+    }
+    .field input::placeholder {
+        color: rgba(122,109,138,0.5);
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        font-weight: 300;
+    }
+
+    /* ── Submit button ── */
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #1e1030, #0e0820);
+        border: 1px solid var(--gold-warm);
+        border-radius: 14px;
+        color: var(--gold-hot);
+        font-family: var(--font-head);
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all .3s;
+        position: relative; overflow: hidden;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        margin-bottom: 1.6rem;
+    }
+    .submit-btn::before {
+        content:'';
+        position:absolute; inset:0;
+        background: linear-gradient(135deg, rgba(240,192,96,0.12), rgba(212,84,122,0.08));
+        opacity:0; transition: opacity .3s;
+    }
+    .submit-btn:hover {
+        border-color: var(--gold-hot);
+        box-shadow: 0 0 40px rgba(240,192,96,0.2), 0 0 80px rgba(240,192,96,0.07);
+        transform: translateY(-2px);
+    }
+    .submit-btn:hover::before { opacity:1; }
+    .submit-btn:active { transform: translateY(0); }
+
+    .btn-icon {
+        width: 34px; height: 34px;
+        border: 1px solid rgba(240,192,96,0.3);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    /* ── Footer links ── */
+    .card-footer {
+        text-align: center;
+        padding-top: 1.4rem;
+        border-top: 1px solid rgba(200,152,74,0.1);
+    }
+    .card-footer p {
+        font-size: 0.8rem;
+        color: var(--muted);
+        line-height: 1.7;
+        font-weight: 300;
+    }
+    .card-footer a {
+        color: var(--gold-warm);
+        text-decoration: none;
+        transition: color .2s;
+    }
+    .card-footer a:hover { color: var(--gold-hot); }
+
+    /* ── Copyright ── */
+    .copy {
+        margin-top: 1.6rem;
+        font-family: var(--font-num);
+        font-size: 0.58rem;
+        letter-spacing: 3px;
+        color: rgba(122,109,138,0.5);
+        text-align: center;
+    }
+
+    /* ── Zodiac ring decoration ── */
+    .zodiac-ring {
+        position: absolute;
+        top: -30px; right: -30px;
+        width: 120px; height: 120px;
+        border: 1px solid rgba(240,192,96,0.08);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .zodiac-ring::before {
+        content:'';
+        position:absolute; inset:12px;
+        border: 1px solid rgba(212,84,122,0.06);
+        border-radius: 50%;
+    }
+
+    /* ── Corner stars ── */
+    .corner-star {
+        position: absolute;
+        font-size: 0.55rem;
+        color: var(--gold-dim);
+        opacity: 0.5;
+    }
+    .corner-star.tl { top:18px; left:22px; }
+    .corner-star.br { bottom:18px; right:22px; }
+
+    @media (max-width: 500px) {
+        .card { padding: 2rem 1.5rem; border-radius: 20px; }
+        .brand-name { font-size: 1.8rem; }
+        body { padding: 1rem; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- Cursors -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- Canvas -->
+<canvas id="cosmos"></canvas>
+<canvas id="particles"></canvas>
+
+<!-- Mandala -->
+<svg class="mandala-bg" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="250" cy="250" r="240" stroke="#c9984a" stroke-width="0.6"/>
+    <circle cx="250" cy="250" r="200" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="160" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="120" stroke="#c9984a" stroke-width="0.4"/>
+    <circle cx="250" cy="250" r="80"  stroke="#c9984a" stroke-width="0.4"/>
+    <circle cx="250" cy="250" r="40"  stroke="#f0c060" stroke-width="0.6"/>
+    <line x1="10"  y1="250" x2="490" y2="250" stroke="#c9984a" stroke-width="0.4"/>
+    <line x1="250" y1="10"  x2="250" y2="490" stroke="#c9984a" stroke-width="0.4"/>
+    <line x1="74"  y1="74"  x2="426" y2="426" stroke="#c9984a" stroke-width="0.3"/>
+    <line x1="426" y1="74"  x2="74"  y2="426" stroke="#c9984a" stroke-width="0.3"/>
+    <polygon points="250,50 450,350 50,350"  stroke="#c9984a" stroke-width="0.5" fill="none"/>
+    <polygon points="250,450 450,150 50,150" stroke="#c9984a" stroke-width="0.5" fill="none"/>
+    <polygon points="250,80 430,320 70,320"  stroke="#d4547a" stroke-width="0.3" fill="none"/>
+    <polygon points="250,420 430,180 70,180" stroke="#d4547a" stroke-width="0.3" fill="none"/>
+    <circle cx="250" cy="250" r="9" fill="#c9984a" opacity="0.5"/>
+    <circle cx="250" cy="10"  r="4" fill="#f0c060" opacity="0.5"/>
+    <circle cx="250" cy="490" r="4" fill="#f0c060" opacity="0.5"/>
+    <circle cx="10"  cy="250" r="4" fill="#f0c060" opacity="0.5"/>
+    <circle cx="490" cy="250" r="4" fill="#f0c060" opacity="0.5"/>
+</svg>
+
+<!-- ══════ LOGIN ══════ -->
+<div class="login-wrap">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-icon">
+            <i class="fas fa-star-and-crescent"></i>
+        </div>
+        <h1 class="brand-name">Cosmic <em>Insights</em></h1>
+        <p class="brand-sub">✦ Sacred Numerology Oracle ✦</p>
+    </div>
+
+    <div class="divider"><span>☽ Enter the Oracle ☾</span></div>
+
+    <!-- Card -->
+    <div class="card">
+        <div class="card-accent"></div>
+        <div class="zodiac-ring"></div>
+        <span class="corner-star tl">✦ ✦ ✦</span>
+        <span class="corner-star br">✦ ✦ ✦</span>
+
+        <div class="welcome-text">
+            <h2>Welcome back, Seeker</h2>
+            <p>Enter your mobile number to access your cosmic reading</p>
+        </div>
+
+        {% if error %}
+        <div class="error-msg">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="field">
+                <div class="field-label">
+                    <i class="fas fa-mobile-alt"></i> Mobile Number
+                </div>
+                <div class="input-wrap">
+                    <div class="country-tag">
+                        <i class="fas fa-flag"></i> +91
+                    </div>
+                    <input
+                        type="tel"
+                        id="mobileNumber"
+                        name="mobile"
+                        placeholder="10-digit number"
+                        maxlength="10"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        required
+                        autofocus
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span class="btn-icon"><i class="fas fa-sign-in-alt"></i></span>
+                Enter the Cosmos
+            </button>
+        </form>
+
+        <div class="card-footer">
+            <p>New to Cosmic Insights?</p>
+            <p>Contact <a href="mailto:admin@cosmicnumerology.com">admin@cosmicnumerology.com</a> to register</p>
+        </div>
+    </div>
+
+    <p class="copy">© {% now "Y" %} COSMIC INSIGHTS · ALL RIGHTS RESERVED</p>
+</div>
+
+<!-- ══════ VISUAL ENGINE ══════ -->
+<script>
+(function(){
+"use strict";
+
+// ── cursor ──
+const cur = document.getElementById('cur');
+const ring = document.getElementById('curRing');
+let rx = window.innerWidth/2, ry = window.innerHeight/2;
+let mx = rx, my = ry;
+
+window.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
+(function animCursor(){
+    rx += (mx-rx)*0.14; ry += (my-ry)*0.14;
+    ring.style.left = rx+'px'; ring.style.top = ry+'px';
+    requestAnimationFrame(animCursor);
+})();
+
+// ── canvas setup ──
+const cosC  = document.getElementById('cosmos');
+const partC = document.getElementById('particles');
+const cosX  = cosC.getContext('2d');
+const partX = partC.getContext('2d');
+let stars=[], nebulas=[], trail=[];
+let gRot=0;
+
+function resize(){
+    cosC.width = partC.width = window.innerWidth;
+    cosC.height = partC.height = window.innerHeight;
+    stars=[]; nebulas=[];
+    for(let i=0;i<280;i++) stars.push({
+        x: Math.random()*cosC.width,
+        y: Math.random()*cosC.height,
+        r: Math.random()*1.8+0.3,
+        b: Math.random()*0.6+0.2,
+        px: 0.05+Math.random()*0.35
+    });
+    for(let i=0;i<45;i++) nebulas.push({
+        x: Math.random()*cosC.width,
+        y: Math.random()*cosC.height,
+        r: 50+Math.random()*130,
+        h: 240+Math.random()*50
+    });
+}
+window.addEventListener('resize', resize);
+
+// ── mouse trail ──
+window.addEventListener('mousemove', e=>{
+    trail.push({x:e.clientX, y:e.clientY, t:Date.now()});
+    if(trail.length>22) trail.shift();
+});
+
+// ── draw cosmos ──
+function drawCosmos(){
+    const ox=(mx-cosC.width/2)*0.008, oy=(my-cosC.height/2)*0.008;
+
+    // deep background
+    const grd=cosX.createRadialGradient(cosC.width/2,cosC.height/2,0,cosC.width/2,cosC.height/2,cosC.width*0.85);
+    grd.addColorStop(0,'#0c0620');
+    grd.addColorStop(0.55,'#07031a');
+    grd.addColorStop(1,'#04020b');
+    cosX.fillStyle=grd;
+    cosX.fillRect(0,0,cosC.width,cosC.height);
+
+    // nebula blobs
+    nebulas.forEach(n=>{
+        const nx=(n.x+ox*n.r*0.25+cosC.width)%cosC.width;
+        const ny=(n.y+oy*n.r*0.18+cosC.height)%cosC.height;
+        const g=cosX.createRadialGradient(nx,ny,0,nx,ny,n.r);
+        g.addColorStop(0,`hsla(${n.h},55%,28%,0.055)`);
+        g.addColorStop(1,'transparent');
+        cosX.fillStyle=g;
+        cosX.beginPath(); cosX.arc(nx,ny,n.r,0,Math.PI*2); cosX.fill();
+    });
+
+    // stars
+    stars.forEach(s=>{
+        const sx=(s.x+ox*s.px*3+cosC.width)%cosC.width;
+        const sy=(s.y+oy*s.px*3+cosC.height)%cosC.height;
+        cosX.shadowColor='rgba(240,200,120,0.55)';
+        cosX.shadowBlur=7*s.b;
+        cosX.fillStyle=`rgba(255,245,220,${s.b})`;
+        cosX.beginPath(); cosX.arc(sx,sy,s.r,0,Math.PI*2); cosX.fill();
+        if(Math.random()<0.003) s.b=0.2+Math.random()*0.7;
+    });
+    cosX.shadowBlur=0;
+
+    // small galaxy spiral top-right
+    cosX.save();
+    cosX.translate(cosC.width*0.85, cosC.height*0.15);
+    cosX.rotate(gRot);
+    for(let i=0;i<3;i++){
+        cosX.beginPath();
+        cosX.ellipse(0,0,60+i*22,22+i*8,0,0,Math.PI*2);
+        cosX.strokeStyle=`rgba(201,152,74,${0.04+i*0.02})`;
+        cosX.lineWidth=1; cosX.stroke();
+    }
+    cosX.restore();
+
+    // small galaxy spiral bottom-left
+    cosX.save();
+    cosX.translate(cosC.width*0.15, cosC.height*0.82);
+    cosX.rotate(-gRot*0.7);
+    for(let i=0;i<3;i++){
+        cosX.beginPath();
+        cosX.ellipse(0,0,50+i*18,18+i*7,0,0,Math.PI*2);
+        cosX.strokeStyle=`rgba(212,84,122,${0.03+i*0.015})`;
+        cosX.lineWidth=1; cosX.stroke();
+    }
+    cosX.restore();
+
+    gRot+=0.0005;
+}
+
+// ── draw particle trail ──
+function drawParticles(){
+    partX.clearRect(0,0,partC.width,partC.height);
+    const now=Date.now();
+    trail.forEach((p,i)=>{
+        const age=(now-p.t)/350;
+        const a=Math.max(0,(1-age)*(i/trail.length)*0.45);
+        partX.beginPath();
+        partX.arc(p.x,p.y,3*(1-age*0.5),0,Math.PI*2);
+        partX.fillStyle=`rgba(240,192,96,${a})`;
+        partX.fill();
+    });
+}
+
+// ── shoot stars ──
+let shootStars=[];
+function spawnShootStar(){
+    shootStars.push({
+        x: Math.random()*cosC.width*0.8,
+        y: Math.random()*cosC.height*0.4,
+        vx: 4+Math.random()*5,
+        vy: 2+Math.random()*3,
+        len: 60+Math.random()*80,
+        life: 1
+    });
+}
+setInterval(spawnShootStar, 3500);
+
+function drawShootStars(){
+    shootStars=shootStars.filter(s=>s.life>0);
+    shootStars.forEach(s=>{
+        const grad=cosX.createLinearGradient(s.x,s.y,s.x-s.len,s.y-s.len*0.5);
+        grad.addColorStop(0,`rgba(240,192,96,${s.life*0.8})`);
+        grad.addColorStop(1,'transparent');
+        cosX.beginPath();
+        cosX.moveTo(s.x,s.y);
+        cosX.lineTo(s.x-s.len,s.y-s.len*0.5);
+        cosX.strokeStyle=grad; cosX.lineWidth=1.5; cosX.stroke();
+        s.x+=s.vx; s.y+=s.vy; s.life-=0.022;
+    });
+}
+
+// ── main loop ──
+function loop(){
+    drawCosmos();
+    drawShootStars();
+    drawParticles();
+    requestAnimationFrame(loop);
+}
+
+resize();
+loop();
+
+// ── input number formatting ──
+const mobInput = document.getElementById('mobileNumber');
+if(mobInput){
+    mobInput.addEventListener('input', function(){
+        this.value = this.value.replace(/\D/g,'').slice(0,10);
+    });
+}
+
+})();
+</script>
+
+</body>
+</html>

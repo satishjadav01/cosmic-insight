@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cosmic-insight-astrology
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn pro17.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4

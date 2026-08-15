@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosmic Insights · User Profile</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-void:    #04020b;
+  --bg-card:    rgba(12,6,28,0.85);
+  --gold-hot:   #f0c060;
+  --gold-warm:  #c9984a;
+  --gold-dim:   #7a5c28;
+  --rose:       #d4547a;
+  --rose-glow:  #ff7ba0;
+  --teal:       #2dd4bf;
+  --cream:      #f0e6d3;
+  --muted:      #7a6d8a;
+  --border:     rgba(200,152,74,0.22);
+  --border-hot: rgba(240,192,96,0.50);
+  --font-head:  'Cormorant Garamond', Georgia, serif;
+  --font-num:   'DM Mono', monospace;
+  --font-body:  'Outfit', sans-serif;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+body {
+  background: var(--bg-void);
+  font-family: var(--font-body);
+  color: var(--cream);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CURSOR */
+.cursor{position:fixed;z-index:9999;width:10px;height:10px;background:var(--gold-hot);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 20px var(--gold-hot),0 0 40px rgba(240,192,96,0.4);mix-blend-mode:screen;}
+.cursor-ring{position:fixed;z-index:9998;width:36px;height:36px;border:1px solid rgba(240,192,96,0.5);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:transform .12s ease-out;}
+
+/* CANVAS */
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:2;opacity:0.35;}
+
+/* CARD */
+.card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 3rem 2.5rem;
+  backdrop-filter: blur(28px);
+  box-shadow: 0 0 80px rgba(240,192,96,0.06), 0 40px 80px rgba(0,0,0,0.5);
+  overflow: hidden;
+  animation: fadeUp .8s ease forwards;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(240,192,96,0.05), transparent 60%),
+              radial-gradient(ellipse at bottom right, rgba(45,212,191,0.04), transparent 60%);
+  pointer-events: none;
+}
+
+/* MANDALA BG */
+.card-mandala {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 400px; height: 400px;
+  opacity: 0.035;
+  animation: mandala-spin 90s linear infinite;
+  pointer-events: none;
+}
+@keyframes mandala-spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+/* LOGO */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gold-hot);
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(240,192,96,0.4);
+  margin-bottom: 0.6rem;
+}
+.logo svg { width: 20px; height: 20px; }
+
+/* EYEBROW */
+.eyebrow {
+  font-family: var(--font-num);
+  font-size: 0.58rem;
+  letter-spacing: 5px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* ICON */
+.form-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(240,192,96,0.12), rgba(201,152,74,0.06));
+  border: 1px solid var(--border-hot);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 1.7rem;
+  color: var(--gold-hot);
+  box-shadow: 0 0 30px rgba(240,192,96,0.1);
+  animation: icon-pulse 3s ease-in-out infinite;
+}
+@keyframes icon-pulse {
+  0%,100% { box-shadow: 0 0 20px rgba(240,192,96,0.1); transform: scale(1); }
+  50%      { box-shadow: 0 0 40px rgba(240,192,96,0.2); transform: scale(1.04); }
+}
+
+/* TITLE */
+.card-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 300;
+  text-align: center;
+  color: var(--cream);
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+.card-title em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--gold-hot), var(--rose-glow), var(--gold-warm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 2.2rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* DIVIDER */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.divider::before,.divider::after { content:''; flex:1; height:1px; }
+.divider::before { background: linear-gradient(90deg, transparent, var(--gold-dim)); }
+.divider::after  { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+.divider span {
+  font-family: var(--font-num);
+  font-size: 0.55rem;
+  letter-spacing: 4px;
+  color: var(--gold-dim);
+  white-space: nowrap;
+}
+
+/* FORM */
+.form-group { margin-bottom: 1.4rem; }
+
+.form-group label {
+  font-family: var(--font-num);
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.input-wrap {
+  position: relative;
+}
+.input-wrap .input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold-dim);
+  font-size: 0.85rem;
+  transition: color .25s;
+  pointer-events: none;
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 13px 16px 13px 40px;
+  background: rgba(4, 2, 10, 0.7);
+  border: 1px solid rgba(240,192,96,0.18);
+  border-radius: 14px;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 300;
+  transition: all .25s;
+}
+.input-wrap input::placeholder { color: rgba(122,109,138,0.55); font-size: 0.85rem; }
+.input-wrap input:focus {
+  outline: none;
+  border-color: rgba(240,192,96,0.5);
+  box-shadow: 0 0 0 3px rgba(240,192,96,0.07), 0 0 20px rgba(240,192,96,0.06);
+  background: rgba(8, 4, 18, 0.8);
+}
+.input-wrap input:focus + .input-icon,
+.input-wrap:focus-within .input-icon { color: var(--gold-hot); }
+
+/* Fix icon order — icon before input in DOM but positioned absolutely, so just reorder */
+.input-wrap input { padding-left: 42px; }
+
+/* SUBMIT */
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, rgba(240,192,96,0.18), rgba(201,152,74,0.12));
+  border: 1px solid rgba(240,192,96,0.45);
+  border-radius: 14px;
+  color: var(--gold-hot);
+  font-family: var(--font-head);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all .3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(240,192,96,0.08), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.submit-btn:hover::before { opacity: 1; }
+.submit-btn:hover {
+  border-color: var(--gold-hot);
+  box-shadow: 0 0 40px rgba(240,192,96,0.15), 0 8px 24px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+.submit-btn:active { transform: translateY(0); }
+.submit-btn .btn-icon {
+  width: 30px; height: 30px;
+  border: 1px solid rgba(240,192,96,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* SUCCESS BADGE */
+.success-badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.3);
+  border-radius: 12px;
+  margin-top: 1rem;
+  font-family: var(--font-num);
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  color: var(--teal);
+  text-transform: uppercase;
+  animation: fadeUp .5s ease;
+}
+.success-badge.show { display: flex; }
+.success-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px var(--teal);
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* FOOTER LINK */
+.card-footer-text {
+  text-align: center;
+  margin-top: 1.8rem;
+  font-family: var(--font-num);
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+}
+.card-footer-text a {
+  color: var(--gold-warm);
+  text-decoration: none;
+  transition: color .2s;
+}
+.card-footer-text a:hover { color: var(--gold-hot); }
+
+/* ANIM */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .card { padding: 2.2rem 1.6rem; }
+  .card-title { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom Cursors -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- Background Canvases -->
+<canvas id="cosmos"></canvas>
+<canvas id="particles"></canvas>
+
+<!-- FORM CARD -->
+<div class="card">
+
+  <!-- Mandala BG -->
+  <svg class="card-mandala" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="250" cy="250" r="240" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="200" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="160" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="120" stroke="#c9984a" stroke-width="0.5"/>
+    <circle cx="250" cy="250" r="80"  stroke="#c9984a" stroke-width="0.5"/>
+    <line x1="250" y1="10"  x2="250" y2="490" stroke="#c9984a" stroke-width="0.4"/>
+    <line x1="10"  y1="250" x2="490" y2="250" stroke="#c9984a" stroke-width="0.4"/>
+    <line x1="80"  y1="80"  x2="420" y2="420" stroke="#c9984a" stroke-width="0.4"/>
+    <line x1="420" y1="80"  x2="80"  y2="420" stroke="#c9984a" stroke-width="0.4"/>
+    <polygon points="250,50 450,350 50,350"  stroke="#c9984a" stroke-width="0.4" fill="none"/>
+    <polygon points="250,450 450,150 50,150" stroke="#c9984a" stroke-width="0.4" fill="none"/>
+    <polygon points="250,80 430,330 70,330"  stroke="#d4547a" stroke-width="0.3" fill="none"/>
+    <polygon points="250,420 430,170 70,170" stroke="#d4547a" stroke-width="0.3" fill="none"/>
+    <circle cx="250" cy="250" r="40" stroke="#f0c060" stroke-width="0.8"/>
+    <circle cx="250" cy="250" r="8"  fill="#c9984a" opacity="0.6"/>
+  </svg>
+
+  <!-- Logo -->
+  <a href="#" class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+    Cosmic Insights
+  </a>
+  <p class="eyebrow">✦ Sacred Portal · Identity Verification ✦</p>
+
+  <!-- Icon -->
+  <div class="form-icon">
+    <i class="fas fa-user-edit"></i>
+  </div>
+
+  <!-- Title -->
+  <h1 class="card-title">
+    Update Your
+    <em>Profile</em>
+  </h1>
+  <p class="card-sub">Align your identity with the cosmic registry. Keep your sacred coordinates accurate.</p>
+
+  <div class="divider"><span>☽ ✦ ☾</span></div>
+
+  <!-- FORM -->
+  <form method="post" id="userForm">
+    <input type="hidden" name="csrfmiddlewaretoken" value="">
+
+    <div class="form-group">
+      <label for="uid">User ID</label>
+      <div class="input-wrap">
+        <input type="text" id="uid" name="id" placeholder="Enter your cosmic ID" value="" required>
+        <span class="input-icon"><i class="fas fa-fingerprint"></i></span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="mobile">Mobile Number</label>
+      <div class="input-wrap">
+        <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" value="" required>
+        <span class="input-icon"><i class="fas fa-mobile-alt"></i></span>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">
+      <span class="btn-icon"><i class="fas fa-sync-alt"></i></span>
+      Update Profile
+    </button>
+
+    <div class="success-badge" id="successBadge">
+      <span class="success-dot"></span>
+      Profile Updated Successfully
+    </div>
+  </form>
+
+  <p class="card-footer-text">
+    Return to <a href="#">← Home</a> &nbsp;·&nbsp; <a href="#">View Dashboard</a>
+  </p>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* CURSOR */
+const cur=document.getElementById('cur');
+const curRing=document.getElementById('curRing');
+let rx=window.innerWidth/2,ry=window.innerHeight/2,mx=rx,my=ry;
+window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animC(){rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(animC);})();
+
+/* COSMOS */
+const cosC=document.getElementById('cosmos');
+const cosX=cosC.getContext('2d');
+let stars=[],nebulas=[],gRot=0,pt=0;
+function resizeCos(){
+  cosC.width=window.innerWidth;cosC.height=window.innerHeight;
+  stars=[];nebulas=[];
+  for(let i=0;i<320;i++)stars.push({x:Math.random()*cosC.width,y:Math.random()*cosC.height,r:Math.random()*1.8+0.3,b:Math.random()*0.6+0.2,px:0.05+Math.random()*0.4,tw:Math.random()*Math.PI*2,sp:0.005+Math.random()*0.015});
+  for(let i=0;i<50;i++)nebulas.push({x:Math.random()*cosC.width,y:Math.random()*cosC.height,r:40+Math.random()*110,h:240+Math.random()*40});
+}
+function drawCos(){
+  pt+=0.006;
+  const ox=(mx-cosC.width/2)*0.009,oy=(my-cosC.height/2)*0.009;
+  const grd=cosX.createRadialGradient(cosC.width/2,cosC.height/2,0,cosC.width/2,cosC.height/2,cosC.width*0.8);
+  grd.addColorStop(0,'#0c0620');grd.addColorStop(0.5,'#07031a');grd.addColorStop(1,'#04020b');
+  cosX.fillStyle=grd;cosX.fillRect(0,0,cosC.width,cosC.height);
+  nebulas.forEach(n=>{const nx=(n.x+ox*n.r*0.3+cosC.width)%cosC.width,ny=(n.y+oy*n.r*0.2+cosC.height)%cosC.height;const g=cosX.createRadialGradient(nx,ny,0,nx,ny,n.r);g.addColorStop(0,`hsla(${n.h},60%,30%,0.06)`);g.addColorStop(1,'transparent');cosX.fillStyle=g;cosX.beginPath();cosX.arc(nx,ny,n.r,0,Math.PI*2);cosX.fill();});
+  stars.forEach(s=>{const pulse=Math.sin(pt*s.sp*60+s.tw);const b=Math.max(0.05,s.b+pulse*0.12);const sx=(s.x+ox*s.px*3+cosC.width)%cosC.width,sy=(s.y+oy*s.px*3+cosC.height)%cosC.height;cosX.shadowColor='rgba(240,200,120,0.4)';cosX.shadowBlur=6*b;cosX.fillStyle=`rgba(255,245,220,${b})`;cosX.beginPath();cosX.arc(sx,sy,s.r*(1+pulse*0.15),0,Math.PI*2);cosX.fill();});
+  cosX.shadowBlur=0;
+  cosX.save();cosX.translate(cosC.width*0.82,cosC.height*0.18);cosX.rotate(gRot);
+  for(let i=0;i<3;i++){cosX.beginPath();cosX.ellipse(0,0,80+i*30,30+i*10,0,0,Math.PI*2);cosX.strokeStyle=`rgba(201,152,74,${0.04+i*0.02})`;cosX.lineWidth=1;cosX.stroke();}
+  cosX.restore();gRot+=0.0005;
+}
+window.addEventListener('resize',resizeCos);
+
+/* PARTICLES */
+const partC=document.getElementById('particles');
+const partX=partC.getContext('2d');
+let trail=[];
+function resizePart(){partC.width=window.innerWidth;partC.height=window.innerHeight;}
+window.addEventListener('resize',resizePart);
+window.addEventListener('mousemove',e=>{trail.push({x:e.clientX,y:e.clientY,t:Date.now()});if(trail.length>25)trail.shift();});
+function drawPart(){partX.clearRect(0,0,partC.width,partC.height);const now=Date.now();trail.forEach((p,i)=>{const age=(now-p.t)/400;const a=Math.max(0,(1-age)*(i/trail.length)*0.4);partX.beginPath();partX.arc(p.x,p.y,3*(1-age),0,Math.PI*2);partX.fillStyle=`rgba(240,192,96,${a})`;partX.fill();});}
+
+/* LOOP */
+function loop(){drawCos();drawPart();requestAnimationFrame(loop);}
+resizeCos();resizePart();loop();
+
+})();
+
+/* FORM */
+document.getElementById('userForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const id=document.getElementById('uid').value.trim();
+  const mobile=document.getElementById('mobile').value.trim();
+  if(!id||!mobile){return;}
+  const badge=document.getElementById('successBadge');
+  badge.classList.add('show');
+  setTimeout(()=>badge.classList.remove('show'),4000);
+  // Uncomment for Django backend:
+  // this.submit();
+});
+</script>
+</body>
+</html>

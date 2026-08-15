@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load custom_filters %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Numerology · Lucky Numbers & Angel Numbers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+    /* ═══════════════════════════════════════════
+       ROOT & RESET
+    ═══════════════════════════════════════════ */
+    :root {
+        --bg-void:    #04020b;
+        --bg-deep:    #090516;
+        --bg-card:    rgba(12, 6, 28, 0.80);
+        --gold-hot:   #f0c060;
+        --gold-warm:  #c9984a;
+        --gold-dim:   #7a5c28;
+        --rose:       #d4547a;
+        --rose-glow:  #ff7ba0;
+        --teal:       #2dd4bf;
+        --cream:      #f0e6d3;
+        --muted:      #7a6d8a;
+        --border:     rgba(200, 152, 74, 0.22);
+        --border-hot: rgba(240, 192, 96, 0.50);
+        --font-head:  'Cormorant Garamond', Georgia, serif;
+        --font-num:   'DM Mono', monospace;
+        --font-body:  'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        background: var(--bg-void);
+        font-family: var(--font-body);
+        color: var(--cream);
+        min-height: 100vh;
+        overflow-x: hidden;
+        cursor: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       CURSOR
+    ═══════════════════════════════════════════ */
+    .cursor {
+        position: fixed; z-index: 9999;
+        width: 10px; height: 10px;
+        background: var(--gold-hot);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: width .2s, height .2s;
+        box-shadow: 0 0 20px var(--gold-hot), 0 0 40px rgba(240,192,96,0.4);
+        mix-blend-mode: screen;
+    }
+    .cursor-ring {
+        position: fixed; z-index: 9998;
+        width: 36px; height: 36px;
+        border: 1px solid rgba(240,192,96,0.5);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: transform .12s ease-out;
+    }
+
+    /* ═══════════════════════════════════════════
+       CANVAS BACKGROUNDS
+    ═══════════════════════════════════════════ */
+    #cosmos   { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* grain overlay */
+    body::after {
+        content: '';
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none; z-index: 2; opacity: 0.35;
+    }
+
+    /* ═══════════════════════════════════════════
+       NAVIGATION
+    ═══════════════════════════════════════════ */
+    header {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        background: rgba(4, 2, 11, 0.88);
+        backdrop-filter: blur(20px) saturate(150%);
+        border-bottom: 1px solid var(--border);
+        padding: 0 40px;
+        height: 62px;
+        display: flex; align-items: center;
+    }
+
+    .nav-inner {
+        max-width: 1380px; margin: 0 auto; width: 100%;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .logo {
+        font-family: var(--font-head);
+        font-size: 1.3rem; font-weight: 600;
+        color: var(--gold-hot);
+        text-decoration: none;
+        display: flex; align-items: center; gap: 9px;
+        letter-spacing: 1px;
+        text-shadow: 0 0 20px rgba(240,192,96,0.5);
+    }
+    .logo svg { width: 22px; height: 22px; }
+
+    nav ul { list-style: none; display: flex; gap: 4px; align-items: center; }
+    nav a {
+        font-family: var(--font-body);
+        color: rgba(240, 230, 211, 0.65);
+        text-decoration: none;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border: 1px solid transparent;
+        transition: all .25s;
+    }
+    nav a.active {
+        background: linear-gradient(135deg, rgba(240,192,96,0.2), rgba(201,152,74,0.15));
+        border-color: var(--border-hot);
+        color: var(--gold-hot);
+        font-weight: 500;
+    }
+    nav a:hover:not(.active) {
+        color: var(--cream);
+        background: rgba(240,192,96,0.07);
+        border-color: var(--border);
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .username-tag {
+        font-size: 0.78rem; color: var(--gold-warm);
+        display: flex; align-items: center; gap: 5px;
+        font-family: var(--font-num);
+    }
+    .auth-btn {
+        padding: 5px 16px;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: rgba(240, 230, 211, 0.8);
+        border-radius: 30px;
+        font-size: 0.78rem;
+        cursor: pointer; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all .25s;
+        font-family: var(--font-body);
+        letter-spacing: 0.5px;
+    }
+    .auth-btn:hover { border-color: var(--gold-warm); color: var(--gold-hot); background: rgba(240,192,96,0.08); }
+    .logout-btn { border-color: rgba(212,84,122,0.3); color: rgba(212,84,122,0.8); }
+    .logout-btn:hover { border-color: var(--rose); color: var(--rose-glow); background: rgba(212,84,122,0.08); }
+
+    /* ═══════════════════════════════════════════
+       PAGE WRAPPER
+    ═══════════════════════════════════════════ */
+    .page {
+        position: relative; z-index: 10;
+        padding: 62px 0 0;
+        min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════ */
+    .hero {
+        position: relative;
+        text-align: center;
+        padding: 70px 2rem 50px;
+        overflow: hidden;
+    }
+
+    .hero-mandala {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 500px; height: 500px;
+        opacity: 0.07;
+        animation: mandala-spin 80s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes mandala-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    .hero-eyebrow {
+        font-family: var(--font-num);
+        font-size: 0.68rem;
+        letter-spacing: 6px;
+        color: var(--gold-warm);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        opacity: 0;
+        animation: fadeUp .8s .2s forwards;
+    }
+    .hero-title {
+        font-family: var(--font-head);
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        font-weight: 300;
+        line-height: 1.05;
+        color: var(--cream);
+        margin-bottom: 0.3rem;
+        opacity: 0;
+        animation: fadeUp .9s .35s forwards;
+    }
+    .hero-title em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--gold-hot) 0%, var(--rose-glow) 60%, var(--gold-warm) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        display: block;
+    }
+    .hero-sub {
+        font-size: 0.95rem;
+        color: var(--muted);
+        max-width: 540px;
+        margin: 1.2rem auto 0;
+        line-height: 1.8;
+        font-weight: 300;
+        opacity: 0;
+        animation: fadeUp 1s .5s forwards;
+    }
+    .hero-divider {
+        display: flex; align-items: center; justify-content: center;
+        gap: 16px; margin: 2rem auto; max-width: 320px;
+        opacity: 0; animation: fadeUp 1s .65s forwards;
+    }
+    .hero-divider::before, .hero-divider::after {
+        content: ''; flex: 1; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold-dim));
+    }
+    .hero-divider::after { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+    .hero-divider span { font-size: 0.6rem; letter-spacing: 4px; color: var(--gold-dim); font-family: var(--font-num); }
+
+    /* ═══════════════════════════════════════════
+       MAIN LAYOUT
+    ═══════════════════════════════════════════ */
+    .main-wrap {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: 0 2rem 5rem;
+    }
+
+    /* ═══════════════════════════════════════════
+       GLASS PANEL
+    ═══════════════════════════════════════════ */
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 2rem;
+        backdrop-filter: blur(24px);
+        position: relative;
+        overflow: hidden;
+        transition: border-color .3s;
+        margin-bottom: 1.5rem;
+    }
+    .panel::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse at top left, rgba(240,192,96,0.04), transparent 60%);
+        pointer-events: none;
+    }
+    .panel:hover { border-color: rgba(240,192,96,0.35); }
+
+    .panel-label {
+        font-family: var(--font-num);
+        font-size: 0.62rem;
+        letter-spacing: 5px;
+        color: var(--gold-dim);
+        text-transform: uppercase;
+        margin-bottom: 1.8rem;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .panel-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* ═══════════════════════════════════════════
+       DATE FORM
+    ═══════════════════════════════════════════ */
+    .form-panel {
+        max-width: 560px;
+        margin: 0 auto 2.5rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+        font-family: var(--font-num);
+        font-size: 0.6rem;
+        letter-spacing: 3px;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+    .field input {
+        background: rgba(4, 2, 10, 0.72);
+        border: 1px solid rgba(200,152,74,0.18);
+        border-radius: 13px;
+        padding: 12px 16px;
+        color: var(--cream);
+        font-family: var(--font-body);
+        font-size: 0.92rem;
+        font-weight: 300;
+        transition: all .25s;
+        width: 100%;
+    }
+    .field input:focus {
+        outline: none;
+        border-color: rgba(240,192,96,0.5);
+        box-shadow: 0 0 0 3px rgba(240,192,96,0.07);
+    }
+    .field input::placeholder { color: rgba(122,109,138,0.55); font-size: 0.85rem; }
+
+    .calc-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #1c0e2e, #0d0719);
+        border: 1px solid var(--gold-warm);
+        border-radius: 14px;
+        color: var(--gold-hot);
+        font-family: var(--font-head);
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all .3s;
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        margin-top: 1.2rem;
+    }
+    .calc-btn:hover { border-color: var(--gold-hot); box-shadow: 0 0 50px rgba(240,192,96,0.14); transform: translateY(-1px); }
+    .calc-btn:active { transform: translateY(0); }
+    .btn-icon {
+        width: 34px; height: 34px;
+        border: 1px solid rgba(240,192,96,0.3);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    /* Flatpickr overrides */
+    .flatpickr-calendar {
+        background: #0d0820 !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.8) !important;
+    }
+    .flatpickr-day { color: var(--cream) !important; border-radius: 8px !important; }
+    .flatpickr-day:hover { background: rgba(240,192,96,0.15) !important; border-color: transparent !important; }
+    .flatpickr-day.selected { background: var(--gold-warm) !important; color: #000 !important; border-color: var(--gold-warm) !important; }
+    .flatpickr-day.today { border-color: var(--gold-dim) !important; }
+    .flatpickr-months { background: rgba(8,4,18,0.9) !important; border-radius: 16px 16px 0 0 !important; }
+    .flatpickr-current-month, .flatpickr-weekday, .numInputWrapper { color: var(--gold-warm) !important; }
+    .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: var(--gold-warm) !important; }
+
+    /* ═══════════════════════════════════════════
+       CORE NUMBERS — 2 COLUMN
+    ═══════════════════════════════════════════ */
+    .core-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .num-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 2rem 1.8rem;
+        text-align: center;
+        backdrop-filter: blur(28px);
+        position: relative;
+        overflow: hidden;
+        transition: border-color .3s;
+    }
+    .num-card::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at center, rgba(240,192,96,0.055), transparent 70%);
+        pointer-events: none;
+    }
+    .num-card:hover { border-color: var(--border-hot); }
+    .num-card-label {
+        font-family: var(--font-num);
+        font-size: 0.6rem; letter-spacing: 5px;
+        color: var(--gold-dim); text-transform: uppercase;
+        margin-bottom: 1rem;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .num-card-value {
+        font-family: var(--font-num);
+        font-size: 5.5rem; font-weight: 500;
+        color: var(--gold-hot); line-height: 1;
+        margin: 0.4rem 0;
+    }
+    .num-card-desc {
+        font-size: 0.8rem; color: var(--muted);
+        line-height: 1.7; font-weight: 300;
+        margin-top: 1rem; padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    /* ═══════════════════════════════════════════
+       RESULTS — 3 COLUMN
+    ═══════════════════════════════════════════ */
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .result-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 1.8rem 1.5rem;
+        backdrop-filter: blur(28px);
+        position: relative;
+        overflow: hidden;
+        transition: border-color .3s;
+    }
+    .result-card::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at top right, rgba(240,192,96,0.04), transparent 65%);
+        pointer-events: none;
+    }
+    .result-card:hover { border-color: rgba(240,192,96,0.35); }
+
+    .rc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; }
+    .rc-icon {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem;
+        border: 1px solid;
+        flex-shrink: 0;
+    }
+    .rc-icon.angel { border-color: var(--border-hot); background: rgba(240,192,96,0.09); color: var(--gold-hot); }
+    .rc-icon.lucky { border-color: rgba(45,212,191,0.38); background: rgba(45,212,191,0.08); color: var(--teal); }
+    .rc-icon.caution { border-color: rgba(255,123,160,0.38); background: rgba(255,123,160,0.08); color: var(--rose-glow); }
+    .rc-title { font-family: var(--font-head); font-size: 1.05rem; font-weight: 600; color: var(--cream); }
+    .rc-hint {
+        font-family: var(--font-num);
+        font-size: 0.56rem; letter-spacing: 2px;
+        color: var(--muted); text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    /* ═══════════════════════════════════════════
+       NUMBER PILLS
+    ═══════════════════════════════════════════ */
+    .num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .num-pill {
+        background: rgba(4, 2, 10, 0.72);
+        border: 1px solid rgba(200,152,74,0.14);
+        border-radius: 11px;
+        padding: 12px 6px 10px;
+        text-align: center;
+        font-family: var(--font-num);
+        font-size: 0.88rem;
+        color: var(--gold-hot);
+        cursor: pointer;
+        transition: all .2s;
+        line-height: 1.2;
+    }
+    .num-pill:hover { border-color: var(--border-hot); background: rgba(240,192,96,0.09); }
+    .num-pill.lucky-pill  { color: var(--teal); border-color: rgba(45,212,191,0.14); }
+    .num-pill.lucky-pill:hover  { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.08); }
+    .num-pill.caution-pill { color: var(--rose-glow); border-color: rgba(255,123,160,0.14); }
+    .num-pill.caution-pill:hover { border-color: rgba(255,123,160,0.42); background: rgba(255,123,160,0.08); }
+    .pill-label {
+        font-size: 0.55rem; color: var(--muted);
+        display: block; margin-bottom: 3px;
+        letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════
+       INTERPRETATION BOX
+    ═══════════════════════════════════════════ */
+    .interp-box {
+        margin-top: 1rem; padding: 0.9rem 1rem;
+        background: rgba(6, 3, 16, 0.6);
+        border-radius: 11px;
+        border-left: 2px solid var(--gold-dim);
+        font-size: 0.77rem; color: var(--muted);
+        line-height: 1.65; min-height: 56px;
+        transition: all .25s;
+    }
+    .interp-box.active { color: var(--cream); border-left-color: var(--gold-warm); }
+
+    /* ═══════════════════════════════════════════
+       ANGEL POPUP (in-flow faux modal)
+    ═══════════════════════════════════════════ */
+    .popup-overlay {
+        display: none;
+        width: 100%;
+        min-height: 300px;
+        background: rgba(0, 0, 0, 0.82);
+        border-radius: 20px;
+        align-items: center;
+        justify-content: center;
+        margin: 1.5rem 0;
+    }
+    .popup-overlay.active { display: flex; }
+    .popup-box {
+        background: linear-gradient(135deg, rgba(12,6,28,0.98), rgba(18,9,42,0.98));
+        border: 1px solid var(--border-hot);
+        border-radius: 22px;
+        padding: 2.8rem 2.4rem;
+        max-width: 440px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+    .popup-close {
+        position: absolute; top: 13px; right: 18px;
+        background: none; border: none;
+        color: var(--gold-dim); font-size: 1.3rem;
+        cursor: pointer; transition: color .2s;
+        font-family: var(--font-num);
+    }
+    .popup-close:hover { color: var(--gold-hot); }
+    .popup-sym { font-size: 1.8rem; margin-bottom: 1rem; display: block; animation: pulse 2s infinite; }
+    .popup-num {
+        font-family: var(--font-num);
+        font-size: 3.2rem; font-weight: 500;
+        color: var(--gold-hot); margin-bottom: 1.2rem; line-height: 1;
+    }
+    .popup-msg {
+        font-size: 0.92rem; color: var(--muted);
+        line-height: 1.85; padding: 1rem 1.2rem;
+        background: rgba(6,3,16,0.6);
+        border-radius: 12px;
+        border-left: 2px solid var(--gold-warm);
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.1);} }
+
+    /* ═══════════════════════════════════════════
+       ORBIT PLANETS STRIP
+    ═══════════════════════════════════════════ */
+    .planets-strip {
+        background: rgba(6, 3, 16, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    #orbitCanvas { width: 100%; height: 90px; display: block; }
+    .planets-legend {
+        display: flex; justify-content: center; gap: 2rem;
+        padding: 7px 0 10px;
+        font-family: var(--font-num);
+        font-size: 0.6rem; letter-spacing: 2px; color: var(--muted);
+    }
+
+    /* ═══════════════════════════════════════════
+       INFO BOX
+    ═══════════════════════════════════════════ */
+    .info-box {
+        background: rgba(6,3,16,0.5);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.5rem 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .info-box h4 {
+        font-family: var(--font-head);
+        font-size: 1rem; color: var(--gold-warm);
+        margin-bottom: 0.8rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .info-box ul { list-style: none; padding: 0; }
+    .info-box li {
+        font-size: 0.82rem; color: var(--muted);
+        line-height: 1.75; margin-bottom: 6px;
+        font-weight: 300; padding-left: 1.2rem; position: relative;
+    }
+    .info-box li::before { content: '✦'; position: absolute; left: 0; color: var(--gold-dim); font-size: 0.55rem; top: 4px; }
+    .info-box strong { color: rgba(240,230,211,0.72); font-weight: 500; }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════ */
+    .footer {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        border-top: 1px solid var(--border);
+    }
+    .footer p {
+        font-family: var(--font-num);
+        font-size: 0.58rem; letter-spacing: 3px;
+        color: var(--gold-dim); text-transform: uppercase;
+        line-height: 2.2;
+    }
+
+    /* ═══════════════════════════════════════════
+       SOUND BUTTON
+    ═══════════════════════════════════════════ */
+    .sound-btn {
+        position: fixed; bottom: 28px; right: 28px; z-index: 500;
+        padding: 9px 20px;
+        background: rgba(4,2,10,0.85);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 40px;
+        font-family: var(--font-num);
+        font-size: 0.65rem; letter-spacing: 3px;
+        cursor: pointer; transition: all .25s;
+        backdrop-filter: blur(20px);
+    }
+    .sound-btn:hover { border-color: var(--gold-dim); color: var(--gold-warm); }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════ */
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 1060px) {
+        .results-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 720px) {
+        header { padding: 0 18px; }
+        .nav-inner { flex-wrap: wrap; gap: 8px; height: auto; padding: 10px 0; }
+        header { height: auto; }
+        .page { padding-top: 110px; }
+        .main-wrap { padding: 0 1rem 3rem; }
+        .core-grid { grid-template-columns: 1fr; }
+        .results-grid { grid-template-columns: 1fr; }
+        .hero-title { font-size: 2.2rem; }
+    }
+    @media (max-width: 480px) {
+        nav ul { flex-wrap: wrap; justify-content: center; gap: 4px; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- Custom Cursors -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- Background Canvases -->
+<canvas id="cosmos"></canvas>
+<canvas id="particles"></canvas>
+
+<!-- ═══════════ NAVIGATION ═══════════ -->
+<header>
+    <div class="nav-inner">
+        <a href="{% url 'home' %}" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Cosmic Insights
+        </a>
+
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'DateofBirth' %}">Mulank &amp; Bhagiyank</a></li>
+                <li><a href="{% url 'numbers_role' %}" class="active">Lucky Number</a></li>
+                <li><a href="{% url 'marriage_score' %}">Marriage Score</a></li>
+                <li><a href="{% url 'yourplane' %}">Your Plans</a></li>
+            </ul>
+        </nav>
+
+        <div class="user-info">
+            {% if is_authenticated %}
+                <span class="username-tag">
+                    <i class="fas fa-circle" style="font-size:6px; color:var(--teal);"></i>
+                    {{ request.user.username }}
+                </span>
+                <a href="{% url 'profile' %}" class="auth-btn">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="{% url 'logout_view' %}" class="auth-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ PAGE ═══════════ -->
+<div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+        <!-- Mandala SVG -->
+        <svg class="hero-mandala" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="250" cy="250" r="240" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="200" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="160" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="120" stroke="#c9984a" stroke-width="0.5"/>
+            <circle cx="250" cy="250" r="80"  stroke="#c9984a" stroke-width="0.5"/>
+            <line x1="250" y1="10" x2="250" y2="490" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="10"  y1="250" x2="490" y2="250" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="80"  y1="80"  x2="420" y2="420" stroke="#c9984a" stroke-width="0.4"/>
+            <line x1="420" y1="80"  x2="80"  y2="420" stroke="#c9984a" stroke-width="0.4"/>
+            <polygon points="250,50 450,350 50,350"  stroke="#c9984a" stroke-width="0.4" fill="none"/>
+            <polygon points="250,450 450,150 50,150" stroke="#c9984a" stroke-width="0.4" fill="none"/>
+            <polygon points="250,80 430,330 70,330"  stroke="#d4547a" stroke-width="0.3" fill="none"/>
+            <polygon points="250,420 430,170 70,170" stroke="#d4547a" stroke-width="0.3" fill="none"/>
+            <circle cx="250" cy="250" r="40"  stroke="#f0c060" stroke-width="0.8"/>
+            <circle cx="250" cy="250" r="8"   fill="#c9984a" opacity="0.6"/>
+        </svg>
+
+        <p class="hero-eyebrow">✦ Ancient Vedic Numerology · Sacred Numbers ✦</p>
+        <h1 class="hero-title">
+            Cosmic Numerology
+            <em>Your Sacred Blueprint</em>
+        </h1>
+        <p class="hero-sub">Discover your Bhagayank, Mulank, Angel Numbers, Lucky and Unlucky Numbers through the ancient science of celestial vibration and cosmic resonance.</p>
+        <div class="hero-divider"><span>☽ ✦ ☾</span></div>
+
+        {% if is_authenticated %}
+        <p style="font-family:var(--font-num); font-size:0.65rem; letter-spacing:3px; color:var(--teal); opacity:0; animation: fadeUp 1s .8s forwards;">
+            ORACLE ACTIVE · {{ request.user.username|upper }}
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Main Wrap -->
+    <div class="main-wrap">
+
+        <!-- ═══ DATE INPUT FORM ═══ -->
+        <div class="panel form-panel">
+            <p class="panel-label">⟡ Sacred Birth Date</p>
+            <form method="POST" id="dateForm">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="birthDate">Date of Birth</label>
+                    <input type="text" id="birthDate" name="birthDate"
+                           placeholder="DD / MM / YYYY"
+                           value="{{ user_birth_date }}" required>
+                </div>
+                <button type="submit" class="calc-btn">
+                    <span class="btn-icon">✦</span>
+                    Generate Numerology Report
+                </button>
+            </form>
+        </div>
+
+        {% if bagiyank or mulakn %}
+        <!-- ═══ CORE NUMBERS ═══ -->
+        <div class="core-grid">
+            <div class="num-card">
+                <div class="num-card-label">✦ Bhagayank — Destiny Number</div>
+                <div class="num-card-value">{{ bagiyank }}</div>
+                <div class="num-card-desc">Your Destiny Number reveals your life's purpose, spiritual path, and the overarching theme woven into your soul's journey across this incarnation.</div>
+            </div>
+            <div class="num-card">
+                <div class="num-card-label">☽ Mulank — Life Path Number</div>
+                <div class="num-card-value">{{ mulakn }}</div>
+                <div class="num-card-desc">Your Life Path Number illuminates your innate talents, core personality vibration, and the natural rhythms that guide your earthly experience.</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if lucky_number or unlucky_number %}
+        <!-- ═══ RESULTS GRID ═══ -->
+        <div class="results-grid">
+
+            <!-- Angel Numbers -->
+            <div class="result-card">
+                <div class="rc-header">
+                    <div class="rc-icon angel">✦</div>
+                    <div class="rc-title">Angel Numbers</div>
+                </div>
+                <p class="rc-hint">Tap any number to reveal its divine message</p>
+                <div class="num-grid">
+                    <div class="num-pill" onclick="showAngelPopup('11:11')"><span class="pill-label">angel</span>11:11</div>
+                    <div class="num-pill" onclick="showAngelPopup('2:22')"><span class="pill-label">angel</span>2:22</div>
+                    <div class="num-pill" onclick="showAngelPopup('3:33')"><span class="pill-label">angel</span>3:33</div>
+                    <div class="num-pill" onclick="showAngelPopup('4:44')"><span class="pill-label">angel</span>4:44</div>
+                    <div class="num-pill" onclick="showAngelPopup('5:55')"><span class="pill-label">angel</span>5:55</div>
+                    <div class="num-pill" onclick="showAngelPopup('6:06')"><span class="pill-label">angel</span>6:06</div>
+                    <div class="num-pill" onclick="showAngelPopup('7:07')"><span class="pill-label">angel</span>7:07</div>
+                    <div class="num-pill" onclick="showAngelPopup('08:08')"><span class="pill-label">angel</span>08:08</div>
+                    <div class="num-pill" onclick="showAngelPopup('09:09')"><span class="pill-label">angel</span>09:09</div>
+                </div>
+            </div>
+
+            <!-- Lucky Numbers -->
+            <div class="result-card">
+                <div class="rc-header">
+                    <div class="rc-icon lucky">◈</div>
+                    <div class="rc-title">Lucky Numbers</div>
+                </div>
+                <p class="rc-hint">Tap to reveal cosmic significance</p>
+                <div class="num-grid">
+                    {% for num in lucky_number %}
+                        <div class="num-pill lucky-pill"
+                             onclick="showInterpretation(this, 'lucky')"
+                             data-interpretation="{{ interpretations|index:forloop.counter0|default:'Good fortune awaits with this number' }}">
+                            <span class="pill-label">lucky</span>{{ num }}
+                        </div>
+                    {% empty %}
+                        <p style="color:var(--muted); font-size:0.8rem; grid-column:span 3; text-align:center; padding:1rem 0;">No lucky numbers found</p>
+                    {% endfor %}
+                </div>
+                <div class="interp-box" id="luckyInterp">Click a number to reveal its cosmic significance</div>
+            </div>
+
+            <!-- Caution Numbers -->
+            <div class="result-card">
+                <div class="rc-header">
+                    <div class="rc-icon caution">◉</div>
+                    <div class="rc-title">Caution Numbers</div>
+                </div>
+                <p class="rc-hint">Tap to reveal cosmic warning</p>
+                <div class="num-grid">
+                    {% for num in unlucky_number %}
+                        <div class="num-pill caution-pill"
+                             onclick="showInterpretation(this, 'unlucky')"
+                             data-interpretation="{{ interpretations|index:forloop.counter0|default:'Exercise caution with this number' }}">
+                            <span class="pill-label">caution</span>{{ num }}
+                        </div>
+                    {% empty %}
+                        <p style="color:var(--muted); font-size:0.8rem; grid-column:span 3; text-align:center; padding:1rem 0;">No caution numbers found</p>
+                    {% endfor %}
+                </div>
+                <div class="interp-box" id="unluckyInterp">Click a number to reveal its cosmic warning</div>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ═══ ANGEL POPUP (in-flow) ═══ -->
+        <div class="popup-overlay" id="angelPopup">
+            <div class="popup-box">
+                <button class="popup-close" onclick="closeAngelPopup()">✕</button>
+                <span class="popup-sym">✨</span>
+                <div class="popup-num" id="popupAngelNumber">11:11</div>
+                <div class="popup-msg" id="popupAngelMessage">Spiritual awakening. You are on the right path.</div>
+            </div>
+        </div>
+
+        <!-- ═══ ORBIT STRIP ═══ -->
+        <div class="planets-strip">
+            <canvas id="orbitCanvas" width="1200" height="90"></canvas>
+            <div class="planets-legend">
+                <span>☿ Mercury</span>
+                <span>♀ Venus</span>
+                <span>♁ Earth</span>
+                <span>♂ Mars</span>
+                <span>♃ Jupiter</span>
+            </div>
+        </div>
+
+        <!-- ═══ INFO BOX ═══ -->
+        <div class="info-box">
+            <h4>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                </svg>
+                About these sacred numbers
+            </h4>
+            <ul>
+                <li><strong>Mulank (Life Path)</strong> — Derived from the day of birth, revealing the soul's core vibration and innate gifts.</li>
+                <li><strong>Bhagayank (Destiny)</strong> — Derived from the complete birth date sum, charting your destined journey.</li>
+                <li><strong>Angel Numbers</strong> — Repeating sequences carrying divine guidance from higher realms of consciousness.</li>
+                <li><strong>Lucky Numbers</strong> — Cosmic frequencies that resonate harmoniously with your personal vibration.</li>
+                <li>Each number 1–9 carries a unique cosmic frequency that shapes personality, relationships, and destiny.</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Cosmic Numerology · 2025</p>
+            <p>The universe speaks in numbers — listen carefully</p>
+            <p>All calculations are based on ancient numerological principles</p>
+        </div>
+
+    </div><!-- /main-wrap -->
+</div><!-- /page -->
+
+<!-- Sound button -->
+<button class="sound-btn" id="soundBtn">◉ COSMIC HUM · OFF</button>
+
+<!-- Flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+(function () {
+    "use strict";
+
+    /* ── CURSOR ── */
+    const cur     = document.getElementById('cur');
+    const curRing = document.getElementById('curRing');
+    let rx = window.innerWidth / 2, ry = window.innerHeight / 2;
+    let mx = rx, my = ry;
+
+    window.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+    });
+    (function animCursor() {
+        rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14;
+        curRing.style.left = rx + 'px'; curRing.style.top = ry + 'px';
+        requestAnimationFrame(animCursor);
+    })();
+
+    /* ── COSMOS CANVAS ── */
+    const cosC = document.getElementById('cosmos');
+    const cosX = cosC.getContext('2d');
+    let stars = [], nebulas = [], gRot = 0;
+
+    function resizeCosmos() {
+        cosC.width  = window.innerWidth;
+        cosC.height = window.innerHeight;
+        stars = []; nebulas = [];
+        for (let i = 0; i < 320; i++) stars.push({
+            x: Math.random() * cosC.width,
+            y: Math.random() * cosC.height,
+            r: Math.random() * 1.8 + 0.3,
+            b: Math.random() * 0.6 + 0.2,
+            px: 0.05 + Math.random() * 0.4,
+            twink: Math.random() * Math.PI * 2,
+            spd: 0.005 + Math.random() * 0.015
+        });
+        for (let i = 0; i < 50; i++) nebulas.push({
+            x: Math.random() * cosC.width,
+            y: Math.random() * cosC.height,
+            r: 40 + Math.random() * 110,
+            h: 240 + Math.random() * 40
+        });
+    }
+
+    let t = 0;
+    function drawCosmos() {
+        t += 0.006;
+        const ox = (mx - cosC.width  / 2) * 0.009;
+        const oy = (my - cosC.height / 2) * 0.009;
+        const grd = cosX.createRadialGradient(cosC.width/2, cosC.height/2, 0, cosC.width/2, cosC.height/2, cosC.width * 0.8);
+        grd.addColorStop(0, '#0c0620');
+        grd.addColorStop(0.5, '#07031a');
+        grd.addColorStop(1, '#04020b');
+        cosX.fillStyle = grd; cosX.fillRect(0, 0, cosC.width, cosC.height);
+
+        nebulas.forEach(n => {
+            const nx = (n.x + ox * n.r * 0.3 + cosC.width)  % cosC.width;
+            const ny = (n.y + oy * n.r * 0.2 + cosC.height) % cosC.height;
+            const g = cosX.createRadialGradient(nx, ny, 0, nx, ny, n.r);
+            g.addColorStop(0, `hsla(${n.h},60%,30%,0.06)`);
+            g.addColorStop(1, 'transparent');
+            cosX.fillStyle = g; cosX.beginPath(); cosX.arc(nx, ny, n.r, 0, Math.PI * 2); cosX.fill();
+        });
+
+        stars.forEach(s => {
+            const pulse = Math.sin(t * s.spd * 60 + s.twink);
+            const b = Math.max(0.05, s.b + pulse * 0.12);
+            const sx = (s.x + ox * s.px * 3 + cosC.width)  % cosC.width;
+            const sy = (s.y + oy * s.px * 3 + cosC.height) % cosC.height;
+            cosX.shadowColor = 'rgba(240,200,120,0.4)';
+            cosX.shadowBlur  = 6 * b;
+            cosX.fillStyle   = `rgba(255,245,220,${b})`;
+            cosX.beginPath(); cosX.arc(sx, sy, s.r * (1 + pulse * 0.15), 0, Math.PI * 2); cosX.fill();
+        });
+        cosX.shadowBlur = 0;
+
+        cosX.save();
+        cosX.translate(cosC.width * 0.8, cosC.height * 0.2);
+        cosX.rotate(gRot);
+        for (let i = 0; i < 3; i++) {
+            cosX.beginPath();
+            cosX.ellipse(0, 0, 80 + i * 30, 30 + i * 10, 0, 0, Math.PI * 2);
+            cosX.strokeStyle = `rgba(201,152,74,${0.04 + i * 0.02})`;
+            cosX.lineWidth = 1; cosX.stroke();
+        }
+        cosX.restore();
+        gRot += 0.0005;
+    }
+
+    window.addEventListener('resize', resizeCosmos);
+
+    /* ── PARTICLES CANVAS ── */
+    const partC = document.getElementById('particles');
+    const partX = partC.getContext('2d');
+    let trail = [];
+    function resizePart() { partC.width = window.innerWidth; partC.height = window.innerHeight; }
+    window.addEventListener('resize', resizePart);
+    window.addEventListener('mousemove', e => {
+        trail.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+        if (trail.length > 25) trail.shift();
+    });
+    function drawParticles() {
+        partX.clearRect(0, 0, partC.width, partC.height);
+        const now = Date.now();
+        trail.forEach((p, i) => {
+            const age = (now - p.t) / 400;
+            const a   = Math.max(0, (1 - age) * (i / trail.length) * 0.4);
+            partX.beginPath(); partX.arc(p.x, p.y, 3 * (1 - age), 0, Math.PI * 2);
+            partX.fillStyle = `rgba(240,192,96,${a})`; partX.fill();
+        });
+    }
+
+    /* ── ORBIT CANVAS ── */
+    const orbC  = document.getElementById('orbitCanvas');
+    const orbX  = orbC.getContext('2d');
+    const pColors = ['#c9984a','#d4547a','#2dd4bf','#7a6d8a','#f0c060'];
+    const pSizes  = [4, 3.5, 4.5, 3, 5.2];
+    let pAngles   = [0, 1.2, 2.8, 4.5, 0.6];
+
+    function drawOrbits() {
+        const W = orbC.width, H = orbC.height;
+        orbX.clearRect(0, 0, W, H);
+        const cx = W / 2, cy = H / 2;
+        for (let i = 1; i <= 5; i++) {
+            orbX.beginPath();
+            orbX.ellipse(cx, cy, i * (W / 14), i * (H / 10) - 2, 0, 0, Math.PI * 2);
+            orbX.strokeStyle = 'rgba(201,152,74,0.1)'; orbX.lineWidth = 1; orbX.stroke();
+        }
+        pAngles = pAngles.map((a, i) => a + (0.008 + i * 0.004));
+        pAngles.forEach((a, i) => {
+            const rx2 = (i + 1) * (W / 14), ry2 = (i + 1) * (H / 10) - 2;
+            const x = cx + Math.cos(a) * rx2, y = cy + Math.sin(a) * ry2;
+            orbX.shadowBlur = 14; orbX.shadowColor = pColors[i];
+            orbX.beginPath(); orbX.arc(x, y, pSizes[i], 0, Math.PI * 2);
+            orbX.fillStyle = pColors[i]; orbX.fill();
+            orbX.shadowBlur = 0;
+        });
+    }
+
+    function resizeOrbit() { orbC.width = orbC.offsetWidth || 1200; orbC.height = 90; }
+    window.addEventListener('resize', resizeOrbit);
+
+    /* ── MAIN LOOP ── */
+    function loop() {
+        drawCosmos();
+        drawParticles();
+        drawOrbits();
+        requestAnimationFrame(loop);
+    }
+
+    resizeCosmos(); resizePart(); resizeOrbit();
+    loop();
+
+    /* ── SOUND ── */
+    let audioCtx = null, gainNode = null, osc = null, soundOn = false;
+    const sBtn = document.getElementById('soundBtn');
+    sBtn.addEventListener('click', () => {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            osc       = audioCtx.createOscillator();
+            gainNode  = audioCtx.createGain();
+            osc.type  = 'sine'; osc.frequency.value = 111;
+            gainNode.gain.value = 0.03;
+            osc.connect(gainNode).connect(audioCtx.destination);
+            osc.start(); soundOn = true;
+            sBtn.textContent = '◉ COSMIC HUM · ON';
+        } else {
+            soundOn = !soundOn;
+            gainNode.gain.value = soundOn ? 0.03 : 0;
+            sBtn.textContent = soundOn ? '◉ COSMIC HUM · ON' : '◉ COSMIC HUM · OFF';
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    });
+
+})();
+
+/* ── ANGEL POPUP ── */
+const angelMessages = {
+    "11:11": "Spiritual awakening. You are on the right path and fully aligned with the universe.",
+    "2:22":  "Balance and harmony are calling. Trust the process that is unfolding around you.",
+    "3:33":  "Divine protection surrounds you. Ascended masters are drawing very near.",
+    "4:44":  "Angelic support is with you now. You are surrounded by unconditional love.",
+    "5:55":  "Major transformation approaches. Embrace the coming changes with open arms.",
+    "6:06":  "Seek the balance between material and spiritual. Nurture your relationships.",
+    "7:07":  "Mystical wisdom awaits you. Deepen your intuition and inner knowing.",
+    "08:08": "Abundance flows toward you. Financial blessings are on their way.",
+    "09:09": "A great cycle is completing. Prepare your soul for wondrous new beginnings."
+};
+
+function showAngelPopup(angelNumber) {
+    const message = angelMessages[angelNumber] || "Divine message — pay attention to synchronicities around you.";
+    document.getElementById('popupAngelNumber').textContent = angelNumber;
+    document.getElementById('popupAngelMessage').textContent = message;
+    document.getElementById('angelPopup').classList.add('active');
+    document.getElementById('angelPopup').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function closeAngelPopup() {
+    document.getElementById('angelPopup').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAngelPopup(); });
+
+/* ── INTERPRETATION ── */
+function showInterpretation(element, type) {
+    const msg = element.getAttribute('data-interpretation');
+    if (type === 'lucky') {
+        const el = document.getElementById('luckyInterp');
+        el.textContent = msg; el.classList.add('active');
+    } else {
+        const el = document.getElementById('unluckyInterp');
+        el.textContent = msg; el.classList.add('active');
+    }
+}
+
+/* ── FLATPICKR ── */
+flatpickr("#birthDate", {
+    dateFormat: "d/m/Y",
+    maxDate: "today",
+    allowInput: true,
+    altInput: true,
+    altFormat: "d/m/Y"
+});
+
+/* ── COSMIC DATE MANAGER (localStorage sync across pages) ── */
+const CosmicDateManager = {
+    STORAGE_KEY: 'cosmic_user_birth_date',
+    CURRENT_PAGE: 'lucky_number',
+    PAGES: {
+        'mulank_bhagiyank': "{% url 'DateofBirth' %}",
+        'lucky_number':     "{% url 'numbers_role' %}",
+        'your_plans':       "{% url 'yourplane' %}"
+    },
+    saveDate(dateStr, sourcePage) {
+        if (!dateStr) return;
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                original: dateStr,
+                timestamp: Date.now(),
+                sourcePage: sourcePage || this.CURRENT_PAGE
+            }));
+        } catch(e) {}
+    },
+    getDate() {
+        try {
+            const d = localStorage.getItem(this.STORAGE_KEY);
+            return d ? JSON.parse(d).original : null;
+        } catch(e) { return null; }
+    },
+    autoPopulate() {
+        const saved = this.getDate();
+        if (!saved) return;
+        const inp = document.getElementById('birthDate');
+        if (inp && !inp.value) {
+            inp.value = saved;
+            inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    },
+    init() {
+        setTimeout(() => this.autoPopulate(), 150);
+        const form = document.getElementById('dateForm');
+        if (form) {
+            form.addEventListener('submit', () => {
+                const inp = form.querySelector('input[name="birthDate"]');
+                if (inp && inp.value) this.saveDate(inp.value, this.CURRENT_PAGE);
+            });
+        }
+    }
+};
+CosmicDateManager.init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Insights · OTP Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+    /* ═══════════════════════════════════════════
+       ROOT & RESET
+    ═══════════════════════════════════════════ */
+    :root {
+        --bg-void:    #04020b;
+        --bg-card:    rgba(12, 6, 28, 0.82);
+        --gold-hot:   #f0c060;
+        --gold-warm:  #c9984a;
+        --gold-dim:   #7a5c28;
+        --rose:       #d4547a;
+        --rose-glow:  #ff7ba0;
+        --teal:       #2dd4bf;
+        --cream:      #f0e6d3;
+        --muted:      #7a6d8a;
+        --border:     rgba(200, 152, 74, 0.22);
+        --border-hot: rgba(240, 192, 96, 0.50);
+        --font-head:  'Cormorant Garamond', Georgia, serif;
+        --font-num:   'DM Mono', monospace;
+        --font-body:  'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        background: var(--bg-void);
+        font-family: var(--font-body);
+        color: var(--cream);
+        min-height: 100vh;
+        overflow-x: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        cursor: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       CURSOR
+    ═══════════════════════════════════════════ */
+    .cursor {
+        position: fixed; z-index: 9999;
+        width: 10px; height: 10px;
+        background: var(--gold-hot);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%,-50%);
+        box-shadow: 0 0 20px var(--gold-hot), 0 0 40px rgba(240,192,96,0.4);
+        mix-blend-mode: screen;
+    }
+    .cursor-ring {
+        position: fixed; z-index: 9998;
+        width: 36px; height: 36px;
+        border: 1px solid rgba(240,192,96,0.5);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%,-50%);
+        transition: transform .12s ease-out;
+    }
+
+    /* ═══════════════════════════════════════════
+       CANVAS BACKGROUNDS
+    ═══════════════════════════════════════════ */
+    #cosmos    { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    #particles { position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+    body::after {
+        content:'';
+        position:fixed; inset:0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events:none; z-index:2; opacity:0.35;
+    }
+
+    /* ═══════════════════════════════════════════
+       MAIN CARD
+    ═══════════════════════════════════════════ */
+    .otp-wrap {
+        position: relative; z-index: 10;
+        width: 100%; max-width: 480px;
+        animation: fadeUp .8s .1s both;
+    }
+
+    .otp-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 3rem 2.5rem 2.5rem;
+        backdrop-filter: blur(28px);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    .otp-card::before {
+        content:'';
+        position:absolute; inset:0;
+        background:radial-gradient(ellipse at top center, rgba(240,192,96,0.06), transparent 65%);
+        pointer-events:none;
+    }
+    /* top accent line */
+    .otp-card::after {
+        content:'';
+        position:absolute; top:0; left:0; right:0; height:1px;
+        background:linear-gradient(90deg, transparent, var(--gold-warm), var(--rose), var(--gold-warm), transparent);
+    }
+
+    /* ── LOGO ── */
+    .card-logo {
+        display: inline-flex; align-items: center; gap: 9px;
+        font-family: var(--font-head);
+        font-size: 1.25rem; font-weight: 600;
+        color: var(--gold-hot);
+        letter-spacing: 1px;
+        text-shadow: 0 0 20px rgba(240,192,96,0.5);
+        margin-bottom: 2rem;
+        text-decoration: none;
+    }
+    .card-logo svg { width:20px; height:20px; }
+
+    /* ── ICON ── */
+    .card-icon-wrap {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(240,192,96,0.12), rgba(212,84,122,0.08));
+        border: 1px solid var(--border-hot);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.8rem;
+        animation: icon-pulse 3s ease-in-out infinite;
+    }
+    .card-icon-wrap svg { width: 32px; height: 32px; color: var(--gold-hot); }
+    @keyframes icon-pulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(240,192,96,0); }
+        50%      { box-shadow: 0 0 0 12px rgba(240,192,96,0.06); }
+    }
+
+    /* ── EYEBROW ── */
+    .card-eyebrow {
+        font-family: var(--font-num);
+        font-size: 0.62rem; letter-spacing: 5px;
+        color: var(--gold-dim); text-transform: uppercase;
+        margin-bottom: 0.7rem;
+    }
+
+    /* ── TITLE ── */
+    .card-title {
+        font-family: var(--font-head);
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        font-weight: 300; line-height: 1.05;
+        color: var(--cream); margin-bottom: 0.3rem;
+    }
+    .card-title em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--gold-hot) 0%, var(--rose-glow) 60%, var(--gold-warm) 100%);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        display: block;
+    }
+
+    /* ── SUBTITLE ── */
+    .card-sub {
+        font-size: 0.85rem; color: var(--muted);
+        line-height: 1.75; font-weight: 300;
+        margin: 1rem 0 2rem;
+    }
+    .card-sub strong { color: var(--gold-warm); font-weight: 500; }
+
+    /* ── DIVIDER ── */
+    .card-divider {
+        display: flex; align-items: center; gap: 14px;
+        margin: 0 auto 2rem; max-width: 280px;
+    }
+    .card-divider::before,.card-divider::after {
+        content:''; flex:1; height:1px;
+    }
+    .card-divider::before { background:linear-gradient(90deg,transparent,var(--gold-dim)); }
+    .card-divider::after  { background:linear-gradient(90deg,var(--gold-dim),transparent); }
+    .card-divider span { font-size:0.58rem; letter-spacing:4px; color:var(--gold-dim); font-family:var(--font-num); }
+
+    /* ── OTP INPUTS ── */
+    .otp-inputs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 2rem;
+    }
+    .otp-input {
+        width: 58px; height: 68px;
+        background: rgba(4, 2, 10, 0.72);
+        border: 1px solid rgba(200,152,74,0.2);
+        border-radius: 14px;
+        color: var(--gold-hot);
+        font-family: var(--font-num);
+        font-size: 1.8rem; font-weight: 500;
+        text-align: center;
+        transition: all .25s;
+        caret-color: var(--gold-hot);
+    }
+    .otp-input:focus {
+        outline: none;
+        border-color: var(--border-hot);
+        background: rgba(10, 5, 22, 0.9);
+        box-shadow: 0 0 0 3px rgba(240,192,96,0.08), 0 0 20px rgba(240,192,96,0.12);
+        transform: translateY(-2px);
+    }
+    .otp-input.filled {
+        border-color: rgba(45,212,191,0.4);
+        color: var(--teal);
+    }
+
+    /* ── VERIFY BUTTON ── */
+    .verify-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #1c0e2e, #0d0719);
+        border: 1px solid var(--gold-warm);
+        border-radius: 14px;
+        color: var(--gold-hot);
+        font-family: var(--font-head);
+        font-size: 1.15rem; font-weight: 600;
+        letter-spacing: 2px; cursor: pointer;
+        transition: all .3s;
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        margin-bottom: 1.8rem;
+    }
+    .verify-btn:hover {
+        border-color: var(--gold-hot);
+        box-shadow: 0 0 50px rgba(240,192,96,0.14);
+        transform: translateY(-1px);
+    }
+    .verify-btn:active { transform: translateY(0); }
+    .btn-icon {
+        width: 34px; height: 34px;
+        border: 1px solid rgba(240,192,96,0.3);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.88rem;
+    }
+
+    /* ── RESEND ── */
+    .resend-row {
+        font-family: var(--font-num);
+        font-size: 0.65rem; letter-spacing: 2px;
+        color: var(--muted); text-transform: uppercase;
+        margin-bottom: 0.6rem;
+    }
+    .countdown {
+        color: var(--gold-warm); font-weight: 500;
+    }
+    .resend-link {
+        font-family: var(--font-num);
+        font-size: 0.65rem; letter-spacing: 2px;
+        color: var(--gold-dim); text-transform: uppercase;
+        cursor: pointer; text-decoration: none;
+        transition: color .25s;
+        border: none; background: none; padding: 0;
+    }
+    .resend-link:hover { color: var(--gold-hot); }
+    .resend-link:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── BACK LINK ── */
+    .back-row {
+        margin-top: 1.6rem;
+        padding-top: 1.4rem;
+        border-top: 1px solid var(--border);
+    }
+    .back-link {
+        font-family: var(--font-num);
+        font-size: 0.62rem; letter-spacing: 3px;
+        color: var(--muted); text-transform: uppercase;
+        text-decoration: none; display: inline-flex;
+        align-items: center; gap: 8px;
+        transition: color .25s;
+    }
+    .back-link svg { width:14px; height:14px; transition: transform .25s; }
+    .back-link:hover { color: var(--gold-warm); }
+    .back-link:hover svg { transform: translateX(-3px); }
+
+    /* ── ERROR / SUCCESS MESSAGE ── */
+    .msg-box {
+        display: none;
+        padding: 0.9rem 1.2rem;
+        border-radius: 12px;
+        font-size: 0.8rem; font-weight: 300;
+        line-height: 1.6; margin-bottom: 1.4rem;
+        text-align: left;
+    }
+    .msg-box.error {
+        display: block;
+        background: rgba(212,84,122,0.08);
+        border-left: 2px solid var(--rose);
+        color: var(--rose-glow);
+    }
+    .msg-box.success {
+        display: block;
+        background: rgba(45,212,191,0.08);
+        border-left: 2px solid var(--teal);
+        color: var(--teal);
+    }
+
+    /* Django messages support 
+    {% comment %}
+    Add this block to show Django messages:
+    {% for message in messages %}
+        <div class="msg-box {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endcomment %} */
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════ */
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(24px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 520px) {
+        .otp-card { padding: 2.4rem 1.6rem 2rem; }
+        .otp-input { width: 46px; height: 58px; font-size: 1.5rem; }
+        .otp-inputs { gap: 8px; }
+        .card-title { font-size: 1.8rem; }
+    }
+    @media (max-width: 380px) {
+        .otp-input { width: 40px; height: 52px; font-size: 1.3rem; border-radius: 10px; }
+        .otp-inputs { gap: 6px; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- Custom Cursors -->
+<div class="cursor"      id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- Background Canvases -->
+<canvas id="cosmos"></canvas>
+<canvas id="particles"></canvas>
+
+<!-- ═══════════ OTP CARD ═══════════ -->
+<div class="otp-wrap">
+    <div class="otp-card">
+
+        <!-- Logo -->
+        <a href="{% url 'home' %}" class="card-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Cosmic Insights
+        </a>
+
+        <!-- Icon -->
+        <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+        </div>
+
+        <!-- Eyebrow + Title -->
+        <p class="card-eyebrow">✦ Secure Verification · Sacred Gate</p>
+        <h1 class="card-title">
+            OTP
+            <em>Verification</em>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="card-sub">
+            Enter the 6-digit code sent to<br>
+            <strong>{{ email|default:"your registered email" }}</strong>
+        </p>
+
+        <!-- Divider -->
+        <div class="card-divider"><span>☽ ✦ ☾</span></div>
+
+        <!-- Django messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-box {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- OTP Form -->
+        <form method="POST" id="otpForm">
+            {% csrf_token %}
+
+            <div class="otp-inputs">
+                <input type="text" name="otp1" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+                <input type="text" name="otp2" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+                <input type="text" name="otp3" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+                <input type="text" name="otp4" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+                <input type="text" name="otp5" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+                <input type="text" name="otp6" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveToNext(this)" onkeydown="moveToPrev(event,this)">
+            </div>
+
+            <button type="submit" class="verify-btn">
+                <span class="btn-icon">✦</span>
+                Verify &amp; Continue
+            </button>
+        </form>
+
+        <!-- Resend -->
+        <p class="resend-row">
+            Didn't receive the code? &nbsp;<span class="countdown" id="countdown">02:00</span>
+        </p>
+        <button class="resend-link" id="resendBtn" disabled onclick="resendOTP()">
+            Resend OTP
+        </button>
+
+        <!-- Back -->
+        <div class="back-row">
+            <a href="{% url 'login' %}" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15,18 9,12 15,6"/>
+                </svg>
+                Back to Sign In
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+(function(){
+"use strict";
+
+/* ── CURSOR ── */
+const cur=document.getElementById('cur');
+const curRing=document.getElementById('curRing');
+let rx=window.innerWidth/2,ry=window.innerHeight/2,mx=rx,my=ry;
+window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animC(){rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(animC);})();
+
+/* ── COSMOS CANVAS ── */
+const cosC=document.getElementById('cosmos');
+const cosX=cosC.getContext('2d');
+let stars=[],nebulas=[],gRot=0,pt=0;
+function resizeCos(){
+    cosC.width=window.innerWidth;cosC.height=window.innerHeight;
+    stars=[];nebulas=[];
+    for(let i=0;i<300;i++)stars.push({
+        x:Math.random()*cosC.width,y:Math.random()*cosC.height,
+        r:Math.random()*1.8+0.3,b:Math.random()*0.6+0.2,
+        px:0.05+Math.random()*0.4,tw:Math.random()*Math.PI*2,
+        sp:0.005+Math.random()*0.015
+    });
+    for(let i=0;i<45;i++)nebulas.push({
+        x:Math.random()*cosC.width,y:Math.random()*cosC.height,
+        r:40+Math.random()*110,h:240+Math.random()*40
+    });
+}
+function drawCos(){
+    pt+=0.006;
+    const grd=cosX.createRadialGradient(cosC.width/2,cosC.height/2,0,cosC.width/2,cosC.height/2,cosC.width*0.85);
+    grd.addColorStop(0,'#0c0620');grd.addColorStop(0.5,'#07031a');grd.addColorStop(1,'#04020b');
+    cosX.fillStyle=grd;cosX.fillRect(0,0,cosC.width,cosC.height);
+    nebulas.forEach(n=>{
+        const g=cosX.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+        g.addColorStop(0,`hsla(${n.h},60%,30%,0.055)`);g.addColorStop(1,'transparent');
+        cosX.fillStyle=g;cosX.beginPath();cosX.arc(n.x,n.y,n.r,0,Math.PI*2);cosX.fill();
+    });
+    stars.forEach(s=>{
+        const pulse=Math.sin(pt*s.sp*60+s.tw);
+        const b=Math.max(0.05,s.b+pulse*0.12);
+        cosX.shadowColor='rgba(240,200,120,0.4)';cosX.shadowBlur=6*b;
+        cosX.fillStyle=`rgba(255,245,220,${b})`;
+        cosX.beginPath();cosX.arc(s.x,s.y,s.r*(1+pulse*0.15),0,Math.PI*2);cosX.fill();
+    });
+    cosX.shadowBlur=0;
+    cosX.save();
+    cosX.translate(cosC.width*0.85,cosC.height*0.15);cosX.rotate(gRot);
+    for(let i=0;i<3;i++){
+        cosX.beginPath();cosX.ellipse(0,0,70+i*25,26+i*9,0,0,Math.PI*2);
+        cosX.strokeStyle=`rgba(201,152,74,${0.04+i*0.02})`;cosX.lineWidth=1;cosX.stroke();
+    }
+    cosX.restore();gRot+=0.0005;
+}
+window.addEventListener('resize',resizeCos);
+
+/* ── PARTICLES ── */
+const partC=document.getElementById('particles');
+const partX=partC.getContext('2d');
+let trail=[];
+function resizePart(){partC.width=window.innerWidth;partC.height=window.innerHeight;}
+window.addEventListener('resize',resizePart);
+window.addEventListener('mousemove',e=>{trail.push({x:e.clientX,y:e.clientY,t:Date.now()});if(trail.length>25)trail.shift();});
+function drawPart(){
+    partX.clearRect(0,0,partC.width,partC.height);
+    const now=Date.now();
+    trail.forEach((p,i)=>{
+        const age=(now-p.t)/400;const a=Math.max(0,(1-age)*(i/trail.length)*0.4);
+        partX.beginPath();partX.arc(p.x,p.y,3*(1-age),0,Math.PI*2);
+        partX.fillStyle=`rgba(240,192,96,${a})`;partX.fill();
+    });
+}
+
+/* ── LOOP ── */
+function loop(){drawCos();drawPart();requestAnimationFrame(loop);}
+resizeCos();resizePart();loop();
+
+})();
+
+/* ── OTP INPUT NAVIGATION ── */
+const inputs = document.querySelectorAll('.otp-input');
+
+function moveToNext(input) {
+    input.value = input.value.replace(/[^0-9]/g,'');
+    if (input.value.length > 0) {
+        input.classList.add('filled');
+        const next = input.nextElementSibling;
+        if (next && next.classList.contains('otp-input')) next.focus();
+    } else {
+        input.classList.remove('filled');
+    }
+}
+
+function moveToPrev(event, input) {
+    if (event.key === 'Backspace' && input.value.length === 0) {
+        input.classList.remove('filled');
+        const prev = input.previousElementSibling;
+        if (prev && prev.classList.contains('otp-input')) prev.focus();
+    }
+    /* allow paste across all 6 fields */
+}
+
+/* paste handler — fills all 6 boxes at once */
+inputs[0].addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+    [...text].forEach((ch, i) => {
+        if (inputs[i]) { inputs[i].value = ch; inputs[i].classList.add('filled'); }
+    });
+    const next = inputs[Math.min(text.length, 5)];
+    if (next) next.focus();
+});
+
+/* focus first input on load */
+window.addEventListener('DOMContentLoaded', () => { if (inputs[0]) inputs[0].focus(); });
+
+/* ── COUNTDOWN TIMER ── */
+let seconds = 120;
+const countdownEl = document.getElementById('countdown');
+const resendBtn   = document.getElementById('resendBtn');
+
+const timer = setInterval(() => {
+    seconds--;
+    const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+    const s = String(seconds % 60).padStart(2,'0');
+    countdownEl.textContent = `${m}:${s}`;
+    if (seconds <= 0) {
+        clearInterval(timer);
+        countdownEl.textContent = '00:00';
+        resendBtn.disabled = false;
+        resendBtn.style.color = 'var(--gold-warm)';
+    }
+}, 1000);
+
+/* ── RESEND OTP ── */
+function resendOTP() {
+    resendBtn.disabled = true;
+    resendBtn.style.color = '';
+    seconds = 120;
+    countdownEl.textContent = '02:00';
+
+    /* restart timer */
+    const t = setInterval(() => {
+        seconds--;
+        const m = String(Math.floor(seconds/60)).padStart(2,'0');
+        const s = String(seconds%60).padStart(2,'0');
+        countdownEl.textContent = `${m}:${s}`;
+        if (seconds <= 0) {
+            clearInterval(t);
+            countdownEl.textContent = '00:00';
+            resendBtn.disabled = false;
+            resendBtn.style.color = 'var(--gold-warm)';
+        }
+    }, 1000);
+
+    /* fire your Django resend endpoint */
+    fetch("{% url 'resend' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        /* Show success/error message */
+        const existingMsg = document.querySelector('.msg-box.resend-msg');
+        if (existingMsg) existingMsg.remove();
+
+        const msgBox = document.createElement('div');
+        msgBox.className = data.status === 'success' ? 'msg-box success resend-msg' : 'msg-box error resend-msg';
+        msgBox.textContent = data.message || 'OTP resent successfully!';
+
+        const divider = document.querySelector('.card-divider');
+        divider.insertAdjacentElement('afterend', msgBox);
+
+        /* Auto-hide after 4 seconds */
+        setTimeout(() => { msgBox.remove(); }, 4000);
+
+        /* Clear inputs and refocus */
+        inputs.forEach(inp => { inp.value = ''; inp.classList.remove('filled'); });
+        if (inputs[0]) inputs[0].focus();
+    })
+    .catch(() => {
+        const existingMsg = document.querySelector('.msg-box.resend-msg');
+        if (existingMsg) existingMsg.remove();
+
+        const msgBox = document.createElement('div');
+        msgBox.className = 'msg-box error resend-msg';
+        msgBox.textContent = 'Failed to resend OTP. Please try again.';
+
+        const divider = document.querySelector('.card-divider');
+        divider.insertAdjacentElement('afterend', msgBox);
+
+        setTimeout(() => { msgBox.remove(); }, 4000);
+    });
+}
+</script>
+
+</body>
+</html>

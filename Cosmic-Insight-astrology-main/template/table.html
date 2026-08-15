@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load custom_filters %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Turtle Magic Square</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <style>
+        :root {
+            --bg-void: #04020b;
+            --bg-card: rgba(12, 6, 28, 0.80);
+            --gold-hot: #f0c060;
+            --gold-warm: #c9984a;
+            --gold-dim: #7a5c28;
+            --rose: #d4547a;
+            --rose-glow: #ff7ba0;
+            --teal: #2dd4bf;
+            --amber: #ff9d00;
+            --amber-dim: rgba(255, 157, 0, 0.22);
+            --cream: #f0e6d3;
+            --muted: #7a6d8a;
+            --border: rgba(200, 152, 74, 0.22);
+            --border-hot: rgba(240, 192, 96, 0.50);
+            --font-head: 'Cormorant Garamond', Georgia, serif;
+            --font-num: 'DM Mono', monospace;
+            --font-body: 'Outfit', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-void);
+            font-family: var(--font-body);
+            color: var(--cream);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* CURSOR */
+        .cursor {
+            position: fixed;
+            z-index: 9999;
+            width: 10px;
+            height: 10px;
+            background: var(--gold-hot);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px var(--gold-hot), 0 0 40px rgba(240, 192, 96, 0.4);
+            mix-blend-mode: screen;
+        }
+
+        .cursor-ring {
+            position: fixed;
+            z-index: 9998;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(240, 192, 96, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform .12s ease-out;
+        }
+
+        /* CANVAS */
+        #cosmos {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.35;
+        }
+
+        /* NAV */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(4, 2, 11, 0.92);
+            backdrop-filter: blur(20px) saturate(150%);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-content {
+            max-width: 1380px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold-hot);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 20px rgba(240, 192, 96, 0.5);
+        }
+
+        .logo i {
+            font-size: 1.1rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        nav a {
+            font-family: var(--font-body);
+            color: rgba(240, 230, 211, 0.65);
+            text-decoration: none;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+            transition: all .25s;
+        }
+
+        nav a.active {
+            background: linear-gradient(135deg, rgba(240, 192, 96, 0.2), rgba(201, 152, 74, 0.15));
+            border-color: var(--border-hot);
+            color: var(--gold-hot);
+            font-weight: 500;
+        }
+
+        nav a:hover:not(.active) {
+            color: var(--cream);
+            background: rgba(240, 192, 96, 0.07);
+            border-color: var(--border);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: rgba(240, 192, 96, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all .25s;
+        }
+
+        .user-profile-nav:hover {
+            border-color: var(--border-hot);
+            background: rgba(240, 192, 96, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(240, 192, 96, 0.2), rgba(201, 152, 74, 0.15));
+            border: 1px solid var(--border-hot);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-hot);
+            font-size: 0.8rem;
+        }
+
+        .user-name {
+            color: var(--gold-hot);
+            font-size: 0.78rem;
+            font-family: var(--font-num);
+            letter-spacing: 1px;
+        }
+
+        .auth-btn {
+            padding: 5px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: rgba(240, 230, 211, 0.8);
+            border-radius: 30px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .25s;
+            font-family: var(--font-body);
+            letter-spacing: 0.5px;
+        }
+
+        .auth-btn:hover {
+            border-color: var(--gold-warm);
+            color: var(--gold-hot);
+            background: rgba(240, 192, 96, 0.08);
+        }
+
+        .logout-btn {
+            border-color: rgba(212, 84, 122, 0.3);
+            color: rgba(212, 84, 122, 0.8);
+        }
+
+        .logout-btn:hover {
+            border-color: var(--rose);
+            color: var(--rose-glow);
+            background: rgba(212, 84, 122, 0.08);
+        }
+
+        /* PAGE */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            padding-top: 62px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 5rem;
+        }
+
+        /* HERO */
+        .page-hero {
+            position: relative;
+            text-align: center;
+            padding: 70px 2rem 50px;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .hero-mandala {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            opacity: 0.06;
+            animation: mandala-spin 80s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes mandala-spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .hero-eyebrow {
+            font-family: var(--font-num);
+            font-size: 0.68rem;
+            letter-spacing: 6px;
+            color: var(--gold-warm);
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+            opacity: 0;
+            animation: fadeUp .8s .2s forwards;
+            display: block;
+        }
+
+        h1 {
+            font-family: var(--font-head);
+            font-size: clamp(2.8rem, 6vw, 5rem);
+            font-weight: 300;
+            line-height: 1.05;
+            color: var(--cream);
+            margin-bottom: 0.4rem;
+            opacity: 0;
+            animation: fadeUp .9s .35s forwards;
+        }
+
+        h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--gold-hot) 0%, var(--rose-glow) 55%, var(--gold-warm) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: block;
+        }
+
+        .subtitle {
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 560px;
+            margin: 1rem auto 0;
+            line-height: 1.85;
+            font-weight: 300;
+            opacity: 0;
+            animation: fadeUp 1s .5s forwards;
+        }
+
+        .hero-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 1.8rem auto;
+            max-width: 300px;
+            opacity: 0;
+            animation: fadeUp 1s .65s forwards;
+        }
+
+        .hero-divider::before,
+        .hero-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+        }
+
+        .hero-divider::before {
+            background: linear-gradient(90deg, transparent, var(--gold-dim));
+        }
+
+        .hero-divider::after {
+            background: linear-gradient(90deg, var(--gold-dim), transparent);
+        }
+
+        .hero-divider span {
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            color: var(--gold-dim);
+            font-family: var(--font-num);
+        }
+
+        .hero-welcome {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 22px;
+            background: rgba(45, 212, 191, 0.08);
+            border: 1px solid rgba(45, 212, 191, 0.25);
+            border-radius: 30px;
+            font-family: var(--font-num);
+            font-size: 0.68rem;
+            letter-spacing: 3px;
+            color: var(--teal);
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 1s .8s forwards;
+        }
+
+        .hero-welcome-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--teal);
+            box-shadow: 0 0 8px var(--teal);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* DATE PICKER */
+        .date-picker-container {
+            max-width: 520px;
+            margin: 2rem auto 0;
+            padding: 2rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            backdrop-filter: blur(24px);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp .8s .9s forwards;
+        }
+
+        .date-picker-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top left, rgba(240, 192, 96, 0.05), transparent 60%);
+            pointer-events: none;
+        }
+
+        .date-picker-container .panel-label {
+            font-family: var(--font-num);
+            font-size: 0.62rem;
+            letter-spacing: 5px;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-picker-container .panel-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .input-group label {
+            font-family: var(--font-num);
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 13px 40px 13px 16px;
+            background: rgba(4, 2, 10, 0.72);
+            border: 1px solid rgba(240, 192, 96, 0.2);
+            border-radius: 13px;
+            color: var(--cream);
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            font-weight: 300;
+            transition: all .25s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: rgba(240, 192, 96, 0.5);
+            box-shadow: 0 0 0 3px rgba(240, 192, 96, 0.07);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(122, 109, 138, 0.55);
+            font-size: 0.85rem;
+        }
+
+        .calendar-icon {
+            position: absolute;
+            right: 15px;
+            top: 60%;
+            transform: translateY(-50%);
+            color: var(--gold-warm);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(240, 192, 96, 0.2), rgba(201, 152, 74, 0.15));
+            border: 1px solid rgba(240, 192, 96, 0.5);
+            border-radius: 13px;
+            color: var(--gold-hot);
+            font-family: var(--font-head);
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .calculate-btn:hover {
+            border-color: var(--gold-hot);
+            box-shadow: 0 0 40px rgba(240, 192, 96, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .logged-in-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(45, 212, 191, 0.08);
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            border-radius: 30px;
+            font-family: var(--font-num);
+            font-size: 0.62rem;
+            letter-spacing: 3px;
+            color: var(--teal);
+            text-transform: uppercase;
+            margin-top: 1rem;
+        }
+
+        /* COSMIC MESSAGE */
+        .cosmic-message {
+            text-align: center;
+            margin: 2.5rem 0 1rem;
+            font-family: var(--font-head);
+            font-style: italic;
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--gold-warm);
+            text-shadow: 0 0 30px rgba(240, 192, 96, 0.3);
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeUp .8s 1s forwards;
+        }
+
+        /* ── TURTLE (structure preserved, only colors updated) ── */
+        .turtle-container {
+            position: relative;
+            width: 700px;
+            height: 600px;
+            margin: 0 auto 50px;
+            perspective: 1200px;
+            opacity: 0;
+            animation: fadeUp 1.2s 1.1s forwards;
+        }
+
+        .mystical-turtle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            animation: float 12s infinite ease-in-out;
+            filter: drop-shadow(0 20px 40px rgba(240, 192, 96, 0.15));
+        }
+
+        .turtle-body {
+            position: absolute;
+            width: 500px;
+            height: 400px;
+            background: radial-gradient(circle at center, #1a0d00, #0f0800, #080400);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 80px rgba(240, 192, 96, 0.2), inset 0 0 50px rgba(0, 0, 0, 0.9);
+            border: 4px solid var(--gold-dim);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .turtle-shell {
+            position: absolute;
+            width: 420px;
+            height: 340px;
+            background: radial-gradient(circle at center, #120800, #080400);
+            border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.95), 0 0 50px rgba(240, 192, 96, 0.15);
+            border: 2px solid var(--gold-warm);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            padding: 25px;
+            z-index: 5;
+        }
+
+        .shell-segment {
+            background: rgba(30, 15, 0, 0.85);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--gold-hot);
+            font-size: 3.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .4s ease;
+            border: 1px solid rgba(240, 192, 96, 0.3);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6), 0 5px 20px rgba(0, 0, 0, 0.4);
+            animation: pulse-gold 4s infinite;
+            font-family: var(--font-num);
+            text-shadow: 0 0 20px rgba(240, 192, 96, 0.7);
+        }
+
+        .shell-segment::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(240, 192, 96, 0.15) 0%, transparent 70%);
+            transform: rotate(45deg);
+            pointer-events: none;
+            animation: shine 6s infinite;
+        }
+
+        .shell-segment:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .shell-segment:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .shell-segment:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .shell-segment:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        .shell-segment:nth-child(5) {
+            background: rgba(60, 30, 0, 0.7);
+            transform: scale(1.15);
+            z-index: 10;
+            border-color: var(--gold-hot);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 30px rgba(240, 192, 96, 0.4);
+        }
+
+        .shell-segment:nth-child(6) {
+            animation-delay: 1.2s;
+        }
+
+        .shell-segment:nth-child(7) {
+            animation-delay: 1.5s;
+        }
+
+        .shell-segment:nth-child(8) {
+            animation-delay: 1.8s;
+        }
+
+        .shell-segment:nth-child(9) {
+            animation-delay: 2.1s;
+        }
+
+        .shell-segment:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 30px rgba(240, 192, 96, 0.5);
+            background: rgba(50, 25, 0, 0.9);
+            z-index: 10;
+        }
+
+        .turtle-head {
+            position: absolute;
+            width: 110px;
+            height: 85px;
+            background: linear-gradient(to bottom, #1a0d00, #0f0800);
+            border-radius: 50%;
+            top: 45%;
+            left: -5px;
+            border: 3px solid var(--gold-dim);
+            box-shadow: 0 0 25px rgba(240, 192, 96, 0.2);
+            z-index: 1;
+            animation: headMove 8s infinite;
+        }
+
+        .turtle-eye {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--gold-hot);
+            border-radius: 50%;
+            top: 40%;
+            right: 25px;
+            box-shadow: 0 0 20px var(--gold-hot);
+            animation: eyeBlink 6s infinite;
+        }
+
+        .turtle-eye::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .turtle-leg {
+            position: absolute;
+            width: 90px;
+            height: 95px;
+            background: linear-gradient(to bottom, #0f0800, #1a0d00);
+            border-radius: 50%;
+            border: 3px solid var(--gold-dim);
+            z-index: 1;
+            animation: legMove 10s infinite;
+        }
+
+        .leg-front-left {
+            top: 5%;
+            left: 200px;
+            animation-delay: 0s;
+        }
+
+        .leg-front-right {
+            top: 78%;
+            right: 145px;
+            animation-delay: 2s;
+        }
+
+        .leg-back-left {
+            top: 81%;
+            left: 200px;
+            animation-delay: 1s;
+        }
+
+        .leg-back-right {
+            bottom: 70%;
+            right: 100px;
+            animation-delay: 3s;
+        }
+
+        .turtle-tail {
+            position: absolute;
+            width: 65px;
+            height: 40px;
+            background: linear-gradient(to bottom, #0f0800, #1a0d00);
+            border-radius: 50% 0 0 50%;
+            bottom: 40%;
+            right: 40px;
+            transform: rotate(-180deg);
+            z-index: 1;
+            border: 3px solid var(--gold-dim);
+        }
+
+        .turtle-mouth {
+            position: absolute;
+            width: 20px;
+            height: 8px;
+            background: #050200;
+            border-radius: 50%;
+            top: 30%;
+            right: 25px;
+        }
+
+        .turtle-details {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .scale {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: rgba(240, 192, 96, 0.08);
+            border-radius: 50%;
+            box-shadow: inset 0 0 5px rgba(240, 192, 96, 0.2);
+        }
+
+        .scale-1 {
+            top: 20%;
+            left: 25%;
+        }
+
+        .scale-2 {
+            top: 15%;
+            left: 40%;
+        }
+
+        .scale-3 {
+            top: 25%;
+            left: 55%;
+        }
+
+        .scale-4 {
+            top: 35%;
+            left: 30%;
+        }
+
+        .scale-5 {
+            top: 30%;
+            left: 45%;
+        }
+
+        .turtle-claws {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background: var(--gold-dim);
+            border-radius: 50%;
+        }
+
+        .claw-1 {
+            top: 65%;
+            left: 8px;
+        }
+
+        .claw-2 {
+            top: 50%;
+            left: 0;
+        }
+
+        .claw-3 {
+            top: 65%;
+            right: 8px;
+        }
+
+        .claw-4 {
+            top: 50%;
+            right: 0;
+        }
+
+        /* PANEL */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(24px);
+            position: relative;
+            overflow: hidden;
+            transition: border-color .3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top left, rgba(240, 192, 96, 0.04), transparent 60%);
+            pointer-events: none;
+        }
+
+        .panel:hover {
+            border-color: rgba(240, 192, 96, 0.35);
+        }
+
+        .panel-label-bar {
+            font-family: var(--font-num);
+            font-size: 0.62rem;
+            letter-spacing: 5px;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-label-bar::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
+
+        /* MAGIC SQUARE INFO */
+        .magic-square-info {
+            max-width: 900px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .info-title {
+            font-family: var(--font-head);
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 300;
+            text-align: center;
+            color: var(--cream);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-title em {
+            font-style: italic;
+            color: var(--gold-hot);
+        }
+
+        .info-eyebrow {
+            font-family: var(--font-num);
+            font-size: 0.62rem;
+            letter-spacing: 5px;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .magic-sum {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: var(--font-num);
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .magic-sum span {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--gold-hot);
+            font-weight: 600;
+            text-shadow: 0 0 20px rgba(240, 192, 96, 0.4);
+            display: block;
+        }
+
+        .magic-properties {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+        }
+
+        .property-card {
+            background: rgba(4, 2, 10, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.8rem 1.4rem;
+            text-align: center;
+            transition: all .3s;
+        }
+
+        .property-card:hover {
+            border-color: var(--border-hot);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(240, 192, 96, 0.08);
+        }
+
+        .property-title {
+            font-family: var(--font-num);
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .property-value {
+            font-family: var(--font-head);
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--gold-hot);
+            text-shadow: 0 0 15px rgba(240, 192, 96, 0.4);
+            margin: 0.5rem 0;
+            line-height: 1;
+        }
+
+        .property-card p {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        /* OWL CAROUSEL */
+        .owl-carousel-container {
+            max-width: 900px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .owl-title {
+            font-family: var(--font-head);
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 300;
+            text-align: center;
+            color: var(--cream);
+            margin-bottom: 0.5rem;
+        }
+
+        .owl-title em {
+            font-style: italic;
+            color: var(--gold-hot);
+        }
+
+        .owl-eyebrow {
+            font-family: var(--font-num);
+            font-size: 0.62rem;
+            letter-spacing: 5px;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .owl-carousel {
+            margin-bottom: 20px;
+        }
+
+        .owl-item {
+            display: flex !important;
+            align-items: stretch;
+        }
+
+        .owl-card-content {
+            width: 100%;
+            height: 400px;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(240, 192, 96, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all .4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .owl-card-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(240, 192, 96, 0.35);
+        }
+
+        .owl-card-content h3 {
+            font-family: var(--font-head);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #fff;
+            text-transform: capitalize;
+            flex-shrink: 0;
+        }
+
+        .owl-nav {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .owl-nav button {
+            background: rgba(240, 192, 96, 0.1) !important;
+            border: 1px solid var(--border-hot) !important;
+            color: var(--gold-hot) !important;
+            font-size: 1.5rem !important;
+            padding: 8px 14px !important;
+            border-radius: 50% !important;
+            cursor: pointer;
+            transition: all .3s;
+            margin: 0 5px;
+        }
+
+        .owl-nav button:hover {
+            background: rgba(240, 192, 96, 0.2) !important;
+            box-shadow: 0 0 20px rgba(240, 192, 96, 0.2) !important;
+            transform: scale(1.1);
+        }
+
+        .owl-dot span {
+            background: rgba(240, 192, 96, 0.3) !important;
+        }
+
+        .owl-dot.active span {
+            background: var(--gold-hot) !important;
+            transform: scale(1.2);
+        }
+
+        .owl-details {
+            text-align: center;
+            margin-top: 15px;
+            font-family: var(--font-num);
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .card-mind_plane {
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.3), rgba(74, 144, 226, 0.1));
+        }
+
+        .card-heart_plane {
+            background: linear-gradient(135deg, rgba(233, 78, 119, 0.3), rgba(233, 78, 119, 0.1));
+        }
+
+        .card-practical_plane {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.3), rgba(76, 175, 80, 0.1));
+        }
+
+        .card-vision_plane {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.3), rgba(255, 152, 0, 0.1));
+        }
+
+        .card-will_plane {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.3), rgba(156, 39, 176, 0.1));
+        }
+
+        .card-action_plane {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3), rgba(244, 67, 54, 0.1));
+        }
+
+        .card-rajyog {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 140, 0, 0.15));
+        }
+
+        .card-icon {
+            font-size: 38px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .message-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            flex-grow: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .message-list li {
+            margin-bottom: 10px;
+            padding-left: 22px;
+            position: relative;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            color: rgba(240, 230, 211, 0.85);
+            font-weight: 300;
+        }
+
+        .message-list li::before {
+            content: "✦ ";
+            color: var(--gold-warm);
+            position: absolute;
+            left: 0;
+            font-size: 0.7rem;
+            top: 2px;
+        }
+
+        .no-data {
+            font-style: italic;
+            color: var(--muted);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: rgba(4, 2, 11, 0.9);
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .footer-logo {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold-hot);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            text-shadow: 0 0 20px rgba(240, 192, 96, 0.4);
+        }
+
+        .footer p {
+            font-family: var(--font-num);
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--gold-dim);
+            text-transform: uppercase;
+            line-height: 2.5;
+            margin-top: 0.3rem;
+        }
+
+        /* ORBIT STRIP */
+        .planets-strip {
+            background: rgba(4, 2, 10, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #orbitCanvas {
+            width: 100%;
+            height: 90px;
+            display: block;
+        }
+
+        .planets-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 7px 0 10px;
+            font-family: var(--font-num);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: var(--muted);
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) translateY(0) translateX(0);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) translateY(-25px) translateX(15px);
+            }
+        }
+
+        @keyframes pulse-gold {
+            0% {
+                box-shadow: 0 0 0 0 rgba(240, 192, 96, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 18px rgba(240, 192, 96, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(240, 192, 96, 0);
+            }
+        }
+
+        @keyframes shine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+
+            20% {
+                transform: rotate(45deg) translateX(100%);
+            }
+
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        @keyframes headMove {
+
+            0%,
+            100% {
+                transform: rotate(-5deg);
+            }
+
+            50% {
+                transform: rotate(-8deg);
+            }
+        }
+
+        @keyframes legMove {
+
+            0%,
+            100% {
+                transform: rotate(20deg);
+            }
+
+            50% {
+                transform: rotate(25deg);
+            }
+        }
+
+        @keyframes eyeBlink {
+
+            0%,
+            45%,
+            55%,
+            100% {
+                height: 22px;
+            }
+
+            48%,
+            52% {
+                height: 2px;
+            }
+        }
+
+        @keyframes mandala-spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Flatpickr overrides */
+        .flatpickr-calendar {
+            background: rgba(8, 3, 20, 0.98) !important;
+            border: 1px solid rgba(240, 192, 96, 0.3) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9) !important;
+            border-radius: 16px !important;
+        }
+
+        .flatpickr-months {
+            background: rgba(15, 7, 30, 0.9) !important;
+        }
+
+        .flatpickr-current-month,
+        .flatpickr-monthDropdown-months {
+            color: var(--gold-hot) !important;
+            background: transparent !important;
+        }
+
+        .flatpickr-weekday {
+            color: var(--gold-warm) !important;
+        }
+
+        .flatpickr-day {
+            color: var(--cream) !important;
+        }
+
+        .flatpickr-day:hover {
+            background: rgba(240, 192, 96, 0.15) !important;
+            border-color: rgba(240, 192, 96, 0.3) !important;
+        }
+
+        .flatpickr-day.selected {
+            background: var(--gold-warm) !important;
+            color: #04020b !important;
+            border-color: var(--gold-warm) !important;
+        }
+
+        .flatpickr-day.today {
+            border-color: var(--gold-dim) !important;
+        }
+
+        /* RESPONSIVE */
+        @media(max-width:900px) {
+            .header-content {
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 10px 0;
+                height: auto;
+            }
+
+            .turtle-container {
+                width: 90%;
+                height: 500px;
+            }
+
+            .turtle-body {
+                width: 400px;
+                height: 320px;
+            }
+
+            .turtle-shell {
+                width: 340px;
+                height: 270px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .shell-segment {
+                font-size: 2.5rem;
+            }
+
+            .magic-properties {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:600px) {
+            header {
+                padding: 15px 18px;
+                height: auto;
+            }
+
+            .main-content {
+                padding-top: 110px;
+            }
+
+            .turtle-container {
+                height: 450px;
+            }
+
+            .turtle-body {
+                width: 320px;
+                height: 260px;
+            }
+
+            .turtle-shell {
+                width: 280px;
+                height: 220px;
+                padding: 20px;
+            }
+
+            .shell-segment {
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .turtle-head {
+                width: 85px;
+                height: 65px;
+                left: -42px;
+            }
+
+            .turtle-leg {
+                width: 45px;
+                height: 80px;
+            }
+
+            .turtle-tail {
+                width: 50px;
+                height: 35px;
+                right: -35px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor" id="cur"></div>
+    <div class="cursor-ring" id="curRing"></div>
+    <canvas id="cosmos"></canvas>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">
+                <i class="fas fa-star-and-crescent"></i>
+                Cosmic Insights
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'DateofBirth' %}" class="active">Mulank &amp; Bhagiyank</a></li>
+                    <li><a href="{% url 'numbers_role' %}">Lucky Number</a></li>
+                    <li><a href="{% url 'marriage_score' %}">Marriage Score</a></li>
+                    <li><a href="{% url 'yourplane' %}">Your Plans</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-profile-nav">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <span class="user-name">{{ user.username }}</span>
+                </a>
+                <a href="{% url 'logout_view' %}" class="auth-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- PAGE -->
+    <div class="main-content">
+        <div class="container">
+
+            <!-- HERO -->
+            <div class="page-hero">
+                <svg class="hero-mandala" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="250" cy="250" r="240" stroke="#c9984a" stroke-width="0.5" />
+                    <circle cx="250" cy="250" r="200" stroke="#c9984a" stroke-width="0.5" />
+                    <circle cx="250" cy="250" r="160" stroke="#c9984a" stroke-width="0.5" />
+                    <circle cx="250" cy="250" r="120" stroke="#c9984a" stroke-width="0.5" />
+                    <circle cx="250" cy="250" r="80" stroke="#c9984a" stroke-width="0.5" />
+                    <line x1="250" y1="10" x2="250" y2="490" stroke="#c9984a" stroke-width="0.4" />
+                    <line x1="10" y1="250" x2="490" y2="250" stroke="#c9984a" stroke-width="0.4" />
+                    <line x1="80" y1="80" x2="420" y2="420" stroke="#c9984a" stroke-width="0.4" />
+                    <line x1="420" y1="80" x2="80" y2="420" stroke="#c9984a" stroke-width="0.4" />
+                    <polygon points="250,50 450,350 50,350" stroke="#c9984a" stroke-width="0.4" fill="none" />
+                    <polygon points="250,450 450,150 50,150" stroke="#c9984a" stroke-width="0.4" fill="none" />
+                    <circle cx="250" cy="250" r="40" stroke="#f0c060" stroke-width="0.8" />
+                    <circle cx="250" cy="250" r="8" fill="#c9984a" opacity="0.6" />
+                </svg>
+
+                <span class="hero-eyebrow">✦ Ancient Vedic Numerology · Celestial Wisdom ✦</span>
+                <h1>
+                    Cosmic Turtle
+                    <em>Magic Square</em>
+                </h1>
+                <p class="subtitle">Select a sacred date to unveil the ancient numerical wisdom of the celestial turtle
+                </p>
+
+                <div class="hero-divider"><span>☽ ✦ ☾</span></div>
+
+                {% if user.is_authenticated %}
+                <div class="hero-welcome">
+                    <span class="hero-welcome-dot"></span>
+                    ORACLE ACTIVE · WELCOME, {{ user.username }}
+                </div>
+                {% endif %}
+
+                <!-- DATE PICKER -->
+                <div class="date-picker-container">
+                    <p class="panel-label">✦ Choose Your Sacred Date</p>
+                    <form method="post" id="dateForm">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <label for="date"><i class="fas fa-calendar-alt"></i> &nbsp;Date of Birth</label>
+                            <input type="text" id="date" name="date" placeholder="DD/MM/YYYY" value=" {{ user_date }} "
+                                required>
+                            <i class="fas fa-calendar-alt calendar-icon"></i>
+                        </div>
+                        <button type="submit" class="calculate-btn">
+                            <i class="fas fa-magic"></i> Generate Magic Square
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COSMIC MESSAGE -->
+            <div class="cosmic-message" id="cosmicMessage">
+                The cosmic turtle reveals the eternal wisdom of the Lo Shu square
+            </div>
+
+            <!-- TURTLE (structure fully preserved, colors updated) -->
+            <div class="turtle-container">
+                <div class="mystical-turtle">
+                    <div class="turtle-body">
+                        <div class="turtle-details">
+                            <div class="scale scale-1"></div>
+                            <div class="scale scale-2"></div>
+                            <div class="scale scale-3"></div>
+                            <div class="scale scale-4"></div>
+                            <div class="scale scale-5"></div>
+                        </div>
+                        <div class="turtle-shell" id="turtleShell">
+                            {% for row in matrix %}
+                            {% for cell in row %}
+                            <div class="shell-segment">{{ cell }}</div>
+                            {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="turtle-head">
+                        <div class="turtle-eye"></div>
+                        <div class="turtle-mouth"></div>
+                    </div>
+                    <div class="turtle-leg leg-front-left">
+                        <div class="turtle-claws claw-1"></div>
+                        <div class="turtle-claws claw-2"></div>
+                    </div>
+                    <div class="turtle-leg leg-front-right">
+                        <div class="turtle-claws claw-3"></div>
+                        <div class="turtle-claws claw-4"></div>
+                    </div>
+                    <div class="turtle-leg leg-back-left">
+                        <div class="turtle-claws claw-1"></div>
+                        <div class="turtle-claws claw-2"></div>
+                    </div>
+                    <div class="turtle-leg leg-back-right">
+                        <div class="turtle-claws claw-3"></div>
+                        <div class="turtle-claws claw-4"></div>
+                    </div>
+                    <div class="turtle-tail"></div>
+                </div>
+            </div>
+
+            {% if matrix %}
+            <!-- MAGIC SQUARE PROPERTIES -->
+            <div class="panel magic-square-info">
+                <p class="panel-label-bar">✦ Cosmic Square Properties</p>
+                <h2 class="info-title">The <em>Cosmic Square</em> Properties</h2>
+                <p class="info-eyebrow">✦ Sacred Mathematics of the Lo Shu ✦</p>
+                <div class="magic-sum">
+                    Magic Constant
+                    <span id="magicConstant">15</span>
+                </div>
+                <div class="magic-properties">
+                    <div class="property-card">
+                        <div class="property-title">✦ Row Harmony</div>
+                        <div class="property-value" id="rowSum">15</div>
+                        <p>Each row resonates with cosmic balance</p>
+                    </div>
+                    <div class="property-card">
+                        <div class="property-title">✦ Column Alignment</div>
+                        <div class="property-value" id="colSum">15</div>
+                        <p>Columns align with universal energies</p>
+                    </div>
+                    <div class="property-card">
+                        <div class="property-title">✦ Diagonal Convergence</div>
+                        <div class="property-value" id="diagSum">15</div>
+                        <p>Diagonals converge at cosmic intersections</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORBIT STRIP -->
+            <div class="planets-strip">
+                <canvas id="orbitCanvas" width="1200" height="90"></canvas>
+                <div class="planets-legend">
+                    <span>☿ Mercury</span>
+                    <span>♀ Venus</span>
+                    <span>♁ Earth</span>
+                    <span>♂ Mars</span>
+                    <span>♃ Jupiter</span>
+                </div>
+            </div>
+
+            <!-- OWL CAROUSEL -->
+            <div class="panel owl-carousel-container">
+                <p class="panel-label-bar">✦ Cosmic Messages</p>
+                <h2 class="owl-title">Celestial <em>Wisdom</em></h2>
+                <p class="owl-eyebrow">✦ Navigate through cosmic guidance ✦</p>
+                <div class="owl-carousel owl-theme">
+                    {% for key in messages %}
+                    {% with message_list=messages|get_item:key %}
+                    {% if message_list %}
+                    <div class="item">
+                        <div class="owl-card-content card-{{ key }}">
+                            <div class="card-icon">
+                                {% if key == "mind_plane" %}🧠
+                                {% elif key == "heart_plane" %}❤️
+                                {% elif key == "practical_plane" %}🛠️
+                                {% elif key == "vision_plane" %}👁️
+                                {% elif key == "will_plane" %}💪
+                                {% elif key == "action_plane" %}🎯
+                                {% elif key == "rajyog" %}🌟💰
+                                {% endif %}
+                            </div>
+                            <h3></h3>
+                            <ul class="message-list">
+                                {% for message in message_list %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+                <p class="owl-details">Navigate through cosmic wisdom using the arrows</p>
+            </div>
+            {% endif %}
+
+            <!-- FOOTER -->
+            <footer class="footer">
+                <div class="footer-logo">
+                    <i class="fas fa-star-and-crescent"></i>
+                    Cosmic Insights
+                </div>
+                <p>Celestial Mathematics Interface · Ancient Wisdom Meets Modern Design</p>
+                <p>© 2025 Cosmic Patterns · All dimensions reserved</p>
+            </footer>
+
+        </div><!-- /container -->
+    </div><!-- /main-content -->
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+    <script>
+        (function () {
+            "use strict";
+
+            /* CURSOR */
+            const cur = document.getElementById('cur');
+            const curRing = document.getElementById('curRing');
+            let rx = window.innerWidth / 2, ry = window.innerHeight / 2, mx = rx, my = ry;
+            window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cur.style.left = mx + 'px'; cur.style.top = my + 'px'; });
+            (function animC() { rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14; curRing.style.left = rx + 'px'; curRing.style.top = ry + 'px'; requestAnimationFrame(animC); })();
+
+            /* COSMOS CANVAS */
+            const cosC = document.getElementById('cosmos');
+            const cosX = cosC.getContext('2d');
+            let stars = [], nebulas = [], gRot = 0, pt = 0;
+            function resizeCos() {
+                cosC.width = window.innerWidth; cosC.height = window.innerHeight;
+                stars = []; nebulas = [];
+                for (let i = 0; i < 320; i++)stars.push({ x: Math.random() * cosC.width, y: Math.random() * cosC.height, r: Math.random() * 1.8 + 0.3, b: Math.random() * 0.6 + 0.2, px: 0.05 + Math.random() * 0.4, tw: Math.random() * Math.PI * 2, sp: 0.005 + Math.random() * 0.015 });
+                for (let i = 0; i < 50; i++)nebulas.push({ x: Math.random() * cosC.width, y: Math.random() * cosC.height, r: 40 + Math.random() * 110, h: 30 + Math.random() * 40 });
+            }
+            function drawCos() {
+                pt += 0.006;
+                const ox = (mx - cosC.width / 2) * 0.009, oy = (my - cosC.height / 2) * 0.009;
+                const grd = cosX.createRadialGradient(cosC.width / 2, cosC.height / 2, 0, cosC.width / 2, cosC.height / 2, cosC.width * 0.8);
+                grd.addColorStop(0, '#0c0620'); grd.addColorStop(0.5, '#07031a'); grd.addColorStop(1, '#04020b');
+                cosX.fillStyle = grd; cosX.fillRect(0, 0, cosC.width, cosC.height);
+                nebulas.forEach(n => { const nx = (n.x + ox * n.r * 0.3 + cosC.width) % cosC.width, ny = (n.y + oy * n.r * 0.2 + cosC.height) % cosC.height; const g = cosX.createRadialGradient(nx, ny, 0, nx, ny, n.r); g.addColorStop(0, `hsla(${n.h},60%,30%,0.06)`); g.addColorStop(1, 'transparent'); cosX.fillStyle = g; cosX.beginPath(); cosX.arc(nx, ny, n.r, 0, Math.PI * 2); cosX.fill(); });
+                stars.forEach(s => { const pulse = Math.sin(pt * s.sp * 60 + s.tw); const b = Math.max(0.05, s.b + pulse * 0.12); const sx = (s.x + ox * s.px * 3 + cosC.width) % cosC.width, sy = (s.y + oy * s.px * 3 + cosC.height) % cosC.height; cosX.shadowColor = 'rgba(240,200,120,0.4)'; cosX.shadowBlur = 6 * b; cosX.fillStyle = `rgba(255,245,220,${b})`; cosX.beginPath(); cosX.arc(sx, sy, s.r * (1 + pulse * 0.15), 0, Math.PI * 2); cosX.fill(); });
+                cosX.shadowBlur = 0;
+                cosX.save(); cosX.translate(cosC.width * 0.82, cosC.height * 0.18); cosX.rotate(gRot);
+                for (let i = 0; i < 3; i++) { cosX.beginPath(); cosX.ellipse(0, 0, 80 + i * 30, 30 + i * 10, 0, 0, Math.PI * 2); cosX.strokeStyle = `rgba(201,152,74,${0.04 + i * 0.02})`; cosX.lineWidth = 1; cosX.stroke(); }
+                cosX.restore(); gRot += 0.0005;
+                requestAnimationFrame(drawCos);
+            }
+            window.addEventListener('resize', resizeCos);
+            resizeCos();
+            drawCos();
+
+            /* ORBIT CANVAS */
+            const orbCanvas = document.getElementById('orbitCanvas');
+            if (orbCanvas) {
+                const orbX = orbCanvas.getContext('2d');
+                const pColors = ['#c9984a', '#d4547a', '#2dd4bf', '#7a6d8a', '#f0c060'];
+                const pSizes = [4, 3.5, 4.5, 3, 5.2];
+                let pAngles = [0, 1.2, 2.8, 4.5, 0.6];
+                function resizeOrbit() { orbCanvas.width = orbCanvas.offsetWidth || 1200; orbCanvas.height = 90; }
+                function drawOrbit() {
+                    const W = orbCanvas.width, H = orbCanvas.height, cx = W / 2, cy = H / 2;
+                    orbX.clearRect(0, 0, W, H);
+                    for (let i = 1; i <= 5; i++) { orbX.beginPath(); orbX.ellipse(cx, cy, i * (W / 14), i * (H / 10) - 2, 0, 0, Math.PI * 2); orbX.strokeStyle = 'rgba(201,152,74,0.1)'; orbX.lineWidth = 1; orbX.stroke(); }
+                    pAngles = pAngles.map((a, i) => a + (0.008 + i * 0.004));
+                    pAngles.forEach((a, i) => { const rx2 = (i + 1) * (W / 14), ry2 = (i + 1) * (H / 10) - 2; const x = cx + Math.cos(a) * rx2, y = cy + Math.sin(a) * ry2; orbX.shadowBlur = 14; orbX.shadowColor = pColors[i]; orbX.beginPath(); orbX.arc(x, y, pSizes[i], 0, Math.PI * 2); orbX.fillStyle = pColors[i]; orbX.fill(); orbX.shadowBlur = 0; });
+                    requestAnimationFrame(drawOrbit);
+                }
+                window.addEventListener('resize', resizeOrbit);
+                resizeOrbit();
+                drawOrbit();
+            }
+
+        })();
+
+        /* COSMIC DATE MANAGER */
+        const CosmicDateManager = {
+            STORAGE_KEY: 'cosmic_user_birth_date',
+            CURRENT_PAGE: 'mulank_bhagiyank',
+            PAGES: {
+                'mulank_bhagiyank': "{% url 'DateofBirth' %}",
+                'lucky_number': "{% url 'numbers_role' %}",
+                'your_plans': "{% url 'yourplane' %}"
+            },
+            saveDate: function (dateStr, sourcePage = null) { if (!dateStr) return false; try { const dateData = { original: dateStr, timestamp: new Date().getTime(), formatted: this.formatDate(dateStr), sourcePage: sourcePage || this.CURRENT_PAGE, visitedPages: this.getVisitedPages() }; localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dateData)); return true; } catch (e) { return false; } },
+            getDate: function (format = 'original') { try { const data = localStorage.getItem(this.STORAGE_KEY); if (!data) return null; const dateData = JSON.parse(data); if (format === 'object') return dateData; else if (format === 'formatted') return dateData.formatted; else return dateData.original; } catch (e) { return null; } },
+            formatDate: function (dateStr) { try { let date; if (dateStr.includes('/')) { const parts = dateStr.split('/'); date = new Date(parts[2], parts[1] - 1, parts[0]); } else if (dateStr.includes('-')) { date = new Date(dateStr); } else { return dateStr; } const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${day}/${month}/${year}`; } catch (e) { return dateStr; } },
+            getVisitedPages: function () { const dateData = this.getDate('object'); const visited = dateData?.visitedPages || []; if (!visited.includes(this.CURRENT_PAGE)) visited.push(this.CURRENT_PAGE); return visited; },
+            getNextPage: function () { const visitedPages = this.getVisitedPages(); const allPages = Object.keys(this.PAGES); for (let page of allPages) { if (!visitedPages.includes(page)) return this.PAGES[page]; } return null; },
+            autoPopulateForm: function () { const savedDate = this.getDate('original'); if (!savedDate) return false; const dateInputs = [document.getElementById('date'), document.querySelector('input[name="date"]')]; dateInputs.forEach(input => { if (input && !input.value.trim()) { input.value = savedDate; input.dispatchEvent(new Event('change', { bubbles: true })); } }); return true; },
+            setupAutoRedirect: function () { const form = document.getElementById('dateForm'); if (!form) return; form.addEventListener('submit', (e) => { const dateInput = form.querySelector('input[name="date"]'); if (dateInput && dateInput.value) { this.saveDate(dateInput.value, this.CURRENT_PAGE); } }); },
+            clearDate: function () { localStorage.removeItem(this.STORAGE_KEY); },
+            init: function () { setTimeout(() => { this.autoPopulateForm(); }, 100); this.setupAutoRedirect(); const dateData = this.getDate('object'); if (dateData) this.saveDate(dateData.original, dateData.sourcePage); }
+        };
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', () => CosmicDateManager.init()); } else { CosmicDateManager.init(); }
+        window.CosmicDateManager = CosmicDateManager;
+
+        /* OWL CAROUSEL */
+        $(document).ready(function () {
+            $(".owl-carousel").owlCarousel({
+                loop: true, margin: 20, nav: true, dots: true,
+                autoplay: true, autoplayTimeout: 30000, autoplayHoverPause: true,
+                responsive: { 0: { items: 1 }, 600: { items: 1 }, 900: { items: 2 }, 1200: { items: 3 } }
+            });
+        });
+
+        /* FLATPICKR */
+        flatpickr("#date", {
+            dateFormat: "d/m/Y", maxDate: "today",
+            allowInput: true, altInput: true, altFormat: "d/m/Y", theme: "dark"
+        });
+    </script>
+</body>
+
+</html>

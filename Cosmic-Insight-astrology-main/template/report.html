@@ -1,0 +1,550 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerology Report - Complete Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, #e6f2ff 0%, #f0f8ff 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-group label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1a365d;
+        }
+
+        .form-group input[type="date"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #2c5282;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #e6f2ff 0%, #ffffff 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #2c5282;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card h3::before {
+            content: "📊";
+            font-size: 1.2em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-item strong {
+            color: #2c5282;
+            min-width: 120px;
+        }
+
+        .matrix-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .matrix-section h3 {
+            color: #1a365d;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .matrix {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 120px);
+            gap: 8px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .matrix-cell {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #2c5282;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1a365d;
+            background: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .matrix-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .matrix-cell.empty {
+            background: #f8f9fa;
+            color: #ccc;
+        }
+
+        .lucky-numbers {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .lucky-numbers h3 {
+            color: #1a5d1a;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .number-display {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .number-badge {
+            background: white;
+            color: #1a5d1a;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .unlucky-numbers {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .unlucky-numbers h3 {
+            color: #d63031;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .unlucky-numbers .number-badge {
+            background: white;
+            color: #d63031;
+        }
+
+        .plane-analysis {
+            margin-top: 40px;
+        }
+
+        .plane-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .plane-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .plane-card.mind { border-color: #667eea; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); }
+        .plane-card.heart { border-color: #f093fb; background: linear-gradient(135deg, #fff0f8 0%, #ffffff 100%); }
+        .plane-card.practical { border-color: #4facfe; background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); }
+        .plane-card.vision { border-color: #43e97b; background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%); }
+        .plane-card.will { border-color: #fa709a; background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%); }
+        .plane-card.action { border-color: #feca57; background: linear-gradient(135deg, #fffbf0 0%, #ffffff 100%); }
+        .plane-card.rajyog { border-color: #ff6b6b; background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); }
+
+        .plane-card h4 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #1a365d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plane-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .plane-card li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+
+        .plane-card li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state svg {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .matrix {
+                grid-template-columns: repeat(3, 80px);
+            }
+
+            .matrix-cell {
+                width: 80px;
+                height: 80px;
+                font-size: 1.8em;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .form-group input[type="date"] {
+                width: 100%;
+            }
+        }
+
+        .footer {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Complete Numerology Report</h1>
+            <p>Discover Your Life Path Through Numbers</p>
+        </div>
+
+        <div class="content">
+            <!-- Form Section -->
+            <div class="form-section">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="birthDate">📅 Enter Your Birth Date:</label>
+                        <input type="date" id="birthDate" name="birthDate" required
+                               value="{% if date %}{{ date }}{% endif %}">
+                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                        <button type="submit" name="export_pdf" value="true" class="btn btn-secondary">📄 Download PDF</button>
+                    </div>
+                </form>
+            </div>
+
+            {% if matrix %}
+                <!-- Basic Information -->
+                <div class="info-card">
+                    <h3>Basic Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Date of Birth:</strong>
+                            <span>{{ date }}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Mulank:</strong>
+                            <span>{{ mulakn }} (Day Number)</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Bhagyank:</strong>
+                            <span>{{ bhagiyank }} (Destiny Number)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matrix Section -->
+                <div class="matrix-section">
+                    <h3>🎯 Numerology Matrix (Lo Shu Grid)</h3>
+                    <div class="matrix">
+                        {% for row in matrix %}
+                            {% for cell in row %}
+                                <div class="matrix-cell {% if cell == ' ' %}empty{% endif %}">
+                                    {{ cell }}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Lucky Numbers -->
+                <div class="lucky-numbers">
+                    <h3>🍀 Your Lucky Numbers</h3>
+                    <div class="number-display">
+                        {% for num in lucky_numbers %}
+                            <span class="number-badge">{{ num }}</span>
+                        {% empty %}
+                            <span>No specific lucky numbers found</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Unlucky Numbers -->
+                <div class="unlucky-numbers">
+                    <h3>⚠️ Numbers to Avoid</h3>
+                    <div class="number-display">
+                        {% for num in unlucky_numbers %}
+                            <span class="number-badge">{{ num }}</span>
+                        {% empty %}
+                            <span>No numbers to avoid</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Plane Analysis -->
+                <div class="plane-analysis">
+                    <h2 style="text-align: center; color: #1a365d; margin-bottom: 30px; font-size: 2em;">
+                        📊 Detailed Plane Analysis
+                    </h2>
+
+                    {% if messages.mind_plane %}
+                        <div class="plane-card mind">
+                            <h4>🧠 Mind Plane (4-9-2)</h4>
+                            <ul>
+                                {% for msg in messages.mind_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.heart_plane %}
+                        <div class="plane-card heart">
+                            <h4>💖 Heart Plane (3-5-7)</h4>
+                            <ul>
+                                {% for msg in messages.heart_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.practical_plane %}
+                        <div class="plane-card practical">
+                            <h4>⚙️ Practical Plane (8-1-6)</h4>
+                            <ul>
+                                {% for msg in messages.practical_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.vision_plane %}
+                        <div class="plane-card vision">
+                            <h4>👁️ Vision Plane (4-3-8)</h4>
+                            <ul>
+                                {% for msg in messages.vision_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.will_plane %}
+                        <div class="plane-card will">
+                            <h4>💪 Will Plane (9-5-1)</h4>
+                            <ul>
+                                {% for msg in messages.will_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.action_plane %}
+                        <div class="plane-card action">
+                            <h4>⚡ Action Plane (2-7-6)</h4>
+                            <ul>
+                                {% for msg in messages.action_plane %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if messages.rajyog %}
+                        <div class="plane-card rajyog">
+                            <h4>👑 Rajyog (Divine Blessings)</h4>
+                            <ul>
+                                {% for msg in messages.rajyog %}
+                                    <li>{{ msg }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <h3>Enter Your Birth Date</h3>
+                    <p>Fill in the form above to generate your complete numerology report</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 Numerology Report System | Your Path to Self-Discovery</p>
+        </div>
+    </div>
+</body>
+</html>
