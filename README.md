@@ -163,7 +163,7 @@ Open your browser and navigate to **`http://127.0.0.1:8000/`**.
 ## ☁️ Deployment
 
 ### Deploying to Render
-1. Connect your GitHub repository `satishjadav01/cosmic-insight` to [Render](https://render.com/).
+1. Connect your GitHub repository `satishjadav01/cosmic-insight` to https://cosmic-insight-e72j.onrender.com/
 2. Select **Web Service** using `render.yaml` or set build command:
    ```bash
    ./build.sh
